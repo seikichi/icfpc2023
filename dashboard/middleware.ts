@@ -6,7 +6,7 @@ export const config = {
 };
 
 const USER = process.env.AUTH_USER || "admin";
-const PASSWORD = process.env.AUHT_PASSWORD || "password";
+const PASSWORD = process.env.AUTH_PASSWORD || "password";
 
 export function middleware(req: NextRequest) {
   const basicAuth = req.headers.get("authorization");
