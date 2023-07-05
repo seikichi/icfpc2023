@@ -4,3 +4,6 @@ result.png
 flamegraph*.svg
 perf.data
 perf.data.old
+
+node_modules
+lambda.js
