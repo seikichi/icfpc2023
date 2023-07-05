@@ -2,6 +2,7 @@ import { Card, Title, Text } from "@tremor/react";
 import { prisma } from "@/lib/db";
 import logger from "@/lib/logger";
 import UsersTable from "@/components/UserTable";
+import Invoke from "@/components/Invoke";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,8 @@ export default async function Home() {
       <Card className="mt-6">
         <UsersTable users={users} />
       </Card>
+
+      <Invoke />
     </main>
   );
 }
