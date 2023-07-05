@@ -1,23 +1,33 @@
 "use client";
 
 import { invokeSolver } from "@/lib/actions";
-import { Card, Title, Button } from "@tremor/react";
+import { Card, Title, Button, Flex } from "@tremor/react";
 import { startTransition, useCallback } from "react";
 
 export default function Invoke() {
-  const handleInvoke = useCallback(() => {
+  const handleInvokeLambda = useCallback(() => {
     startTransition(() => {
       invokeSolver();
     });
   }, []);
 
+  const handleInvokeWASM = useCallback(async () => {
+    const wasm = await import("wasm");
+    console.log(`wasm.add(21, 21) = ${wasm.add(21, 21)}`);
+  }, []);
+
   return (
     <Card className="mt-8">
-      <Title>Invoke Solver</Title>
+      <Title>Invoke</Title>
 
-      <Button size="xs" onClick={handleInvoke}>
-        Invoke
-      </Button>
+      <Flex justifyContent="end" className="space-x-2 border-t pt-4 mt-8">
+        <Button size="xs" onClick={handleInvokeLambda}>
+          Invoke Lambda
+        </Button>
+        <Button size="xs" onClick={handleInvokeWASM}>
+          Invoke WASM
+        </Button>
+      </Flex>
     </Card>
   );
 }
