@@ -4,6 +4,8 @@ import { invokeSolver } from "@/lib/actions";
 import { Card, Title, Button, Flex } from "@tremor/react";
 import { startTransition, useCallback } from "react";
 
+import wasm from "wasm";
+
 export default function Invoke() {
   const handleInvokeLambda = useCallback(() => {
     startTransition(() => {
@@ -12,8 +14,9 @@ export default function Invoke() {
   }, []);
 
   const handleInvokeWASM = useCallback(async () => {
-    const wasm = await import("wasm");
-    console.log(`wasm.add(21, 21) = ${wasm.add(21, 21)}`);
+    // const wasm = await import("wasm");
+    const lib = await wasm();
+    console.log(`wasm.add(21, 21) = ${lib.add(21, 21)}`);
   }, []);
 
   return (
