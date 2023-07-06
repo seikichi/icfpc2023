@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.16.2",
+    "@types/aws-lambda": "^8.10.119",
     "prisma": "^4.16.2",
     "ts-node": "^10.9.1"
   }

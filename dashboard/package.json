@@ -15,7 +15,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "wasm": "file:../wasm/pkg",
+    "wasm": "file:../solver/wasm/pkg",
     "@aws-sdk/client-lambda": "^3.363.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",

@@ -16,7 +16,10 @@ export class InfraStack extends cdk.Stack {
     super(scope, id, props);
 
     new lambda.DockerImageFunction(this, "Solver", {
-      code: lambda.DockerImageCode.fromImageAsset("../"),
+      code: lambda.DockerImageCode.fromImageAsset("../", {
+        file: "../lambda/solver/Dockerfile",
+      }),
+
       timeout: cdk.Duration.minutes(15),
       memorySize: 1024,
       environment: {
