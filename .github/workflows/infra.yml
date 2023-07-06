@@ -30,7 +30,7 @@ jobs:
         working-directory: ./infra
 
       - name: Deploy
-        run: npm run cdk deploy --require-approval never
+        run: npm run cdk deploy -- --require-approval never
         working-directory: ./infra
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
