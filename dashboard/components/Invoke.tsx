@@ -9,14 +9,17 @@ import wasm from "wasm";
 export default function Invoke() {
   const handleInvokeLambda = useCallback(() => {
     startTransition(() => {
-      invokeSolver();
+      (async () => {
+        const result = await invokeSolver();
+        alert(`result: ${JSON.stringify(result)}`);
+      })();
     });
   }, []);
 
   const handleInvokeWASM = useCallback(async () => {
     // const wasm = await import("wasm");
     const lib = await wasm();
-    console.log(`wasm.add(21, 21) = ${lib.add(21, 21)}`);
+    alert(`wasm.add(21, 21) = ${lib.add(21, 21)}`);
   }, []);
 
   return (
