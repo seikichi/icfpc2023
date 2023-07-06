@@ -14,6 +14,7 @@ RUN npm install && npm run prisma:generate && npm run build
 COPY Cargo.lock Cargo.toml ./
 COPY core/ core/
 COPY cli/ cli/
+COPY wasm/ wasm/
 RUN cargo build --release
 
 CMD ["lambda.handler"]
