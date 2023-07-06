@@ -21,9 +21,11 @@ jobs:
 
       - name: Build
         run: cargo build --verbose
+        working-directory: ./solver
 
       - name: Run tests
         run: cargo test --verbose
+        working-directory: ./solver
 
       - name: Setup NPM dependencies
         run: npm ci
