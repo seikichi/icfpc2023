@@ -3,7 +3,7 @@
 set -eux
 
 # move to
-pushd ../wasm
+pushd ../solver/wasm
 
 # see: https://betterprogramming.pub/deploying-a-wasm-powered-react-app-on-vercel-cf3cae2a75d6
 echo "Installing Rustup..."
