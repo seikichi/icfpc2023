@@ -1,4 +1,5 @@
 mod input;
+mod score;
 
 use anyhow::bail;
 use glam::Vec2;
@@ -6,29 +7,29 @@ use log::info;
 use std::{fs, path::PathBuf};
 use structopt::StructOpt;
 
-type Instrument = i32;
+pub type Instrument = i32;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Room {
-    size: Vec2,
-    stage_pos: Vec2,
-    stage_size: Vec2,
+    pub size: Vec2,
+    pub stage_pos: Vec2,
+    pub stage_size: Vec2,
 }
 
 #[derive(Clone, Copy, Debug)]
 pub struct Musican {
-    instrument: Instrument,
+    pub instrument: Instrument,
 }
 
 #[derive(Clone, Debug)]
 pub struct Attendee {
-    pos: Vec2,
-    tastes: Vec<f32>,
+    pub pos: Vec2,
+    pub tastes: Vec<f32>,
 }
 
 #[derive(Clone, Debug)]
-struct Solution {
-    placements: Vec<Vec2>,
+pub struct Solution {
+    pub placements: Vec<Vec2>,
 }
 
 #[derive(Debug, StructOpt)]
