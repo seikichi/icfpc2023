@@ -1,5 +1,8 @@
+mod ai;
 mod input;
 mod score;
+
+use crate::ai::{ChainedAI, HeadAI};
 
 use anyhow::bail;
 use glam::Vec2;
@@ -36,6 +39,13 @@ pub struct Solution {
 #[structopt(name = "solver", about = "A solver of ICFPC 2023 problems")]
 struct Opt {
     // Original: https://github.com/seikichi/icfpc2022/blob/master/solver/core/src/lib.rs
+    #[structopt(
+        short = "a",
+        long = "ai",
+        help = "comma separated list of AIs, e.g. 'Cross,Refine'"
+    )]
+    ai: String,
+
     #[structopt(short = "i", long = "input", parse(from_os_str))]
     input_path: PathBuf,
 
@@ -44,6 +54,39 @@ struct Opt {
 
     #[structopt(short = "q", help = "disable debug log")]
     quiet: bool,
+}
+
+fn parse_ai_string(
+    ai_str: &str,
+    opt: &Opt,
+) -> anyhow::Result<(Box<dyn HeadAI>, Vec<Box<dyn ChainedAI>>)> {
+    let parts = ai_str.split(',').collect::<Vec<_>>();
+    let head_ai: Box<dyn ai::HeadAI> = match parts[0] {
+        "Grid" => Box::new(ai::GridAI {}),
+        x => bail!("'{x}' is not a HeadAI"),
+    };
+    let mut chained_ais = vec![];
+    // for name in &parts[1..] {
+    //     let chained_ai: Box<dyn ai::ChainedAI> = match *name {
+    //         "Refine" => Box::new(ai::RefineAi {
+    //             n_iters: opt.refine_iters,
+    //             algorithm: match opt.refine_algorithm.as_str() {
+    //                 "hill" | "hillclimbing" => ai::OptimizeAlgorithm::HillClimbing,
+    //                 "annealing" => ai::OptimizeAlgorithm::Annealing,
+    //                 x => bail!("'{x}' is not OptimizeAlgorithm"),
+    //             },
+    //             initial_temperature: opt.refine_initial_temperature,
+    //             dp_divide_max: opt.refine_dp_divide_max,
+    //             show_intermediates: opt.refine_show_intermediates,
+    //         }),
+    //         "Annealing" => Box::new(ai::AnnealingAI {
+    //             time_limit: Duration::from_secs(opt.annealing_seconds),
+    //         }),
+    //         x => bail!("'{x}' is not a ChainedAI"),
+    //     };
+    //     chained_ais.push(chained_ai);
+    // }
+    Ok((head_ai, chained_ais))
 }
 
 #[derive(Clone, Debug)]
@@ -56,7 +99,7 @@ pub fn run() -> anyhow::Result<Output> {
     let loglevel = if opt.quiet { "info" } else { "debug" };
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or(loglevel)).init();
 
-    // let (mut head_ai, chained_ais) = parse_ai_string(&opt.ai, &opt)?;
+    let (mut head_ai, _chained_ais) = parse_ai_string(&opt.ai, &opt)?;
 
     if !opt.output_dir.is_dir() {
         bail!("'{}' is not a directory", opt.output_dir.to_string_lossy());
@@ -71,24 +114,7 @@ pub fn run() -> anyhow::Result<Output> {
 
     let input = input::load_from_file(opt.input_path.clone())?;
 
-    // println!("input: {:?}", input);
-    // TODO: move the following logic to other files
-    // SOLVER START
-    let mut placements: Vec<Vec2> = vec![];
-    let mut x = input.room.stage_pos.x + 10.0;
-    let mut y = input.room.stage_pos.y + 10.0;
-    for _ in 0..input.musicians.len() {
-        placements.push(Vec2 { x, y });
-        x += 10.0;
-        if x + 10.0 >= input.room.stage_pos.x + input.room.stage_size.x {
-            x = input.room.stage_pos.x + 10.0;
-            y += 10.0;
-        }
-    }
-
-    let solution = Solution { placements };
-    // println!("solution: {:?}", solution);
-    // SOLVER DONE
+    let solution = head_ai.solve(&input);
 
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
     let output_json = serde_json::to_string(&solution)?;
