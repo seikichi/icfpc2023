@@ -43,6 +43,15 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
     let musicians = &input.musicians;
     let placements = &solution.placements;
 
+    // musician の人数と plaments 内の座標の数が一致していることを確かめる
+    if musicians.len() != placements.len() {
+        anyhow::bail!(
+            "invalid placement: invalid number of placements: n_musicians={}, n_placements={}",
+            musicians.len(),
+            placements.len()
+        );
+    }
+
     // すべての musician がステージ内に入っていることを確かめる
     for k in 0..musicians.len() {
         let p = placements[k];
