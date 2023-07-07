@@ -1,4 +1,5 @@
 mod input;
+mod score;
 
 use glam::Vec2;
 
