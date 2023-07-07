@@ -2,21 +2,25 @@ use glam::Vec2;
 
 type Instrument = i32;
 
+#[derive(Clone, Copy, Debug)]
 struct Room {
     size: Vec2,
     stage_pos: Vec2,
     stage_size: Vec2,
 }
 
+#[derive(Clone, Copy, Debug)]
 struct Musican {
     instrument: Instrument,
 }
 
+#[derive(Clone, Debug)]
 struct Atenndee {
     pos: Vec2,
     tastes: Vec<Instrument>,
 }
 
+#[derive(Clone, Debug)]
 struct Solution {
     placements: Vec<Vec2>,
 }
