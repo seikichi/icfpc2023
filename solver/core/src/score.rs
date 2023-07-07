@@ -61,7 +61,7 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
             let diff = p1 - p2;
             let squared_distance = diff.dot(diff);
             if squared_distance < 10.0 * 10.0 {
-                anyhow::bail!("invalid placement: musicans are too close: k1={k1}, k2={k2}")
+                anyhow::bail!("invalid placement: musicians are too close: k1={k1}, k2={k2}")
             }
         }
     }
