@@ -9,30 +9,41 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> i64 {
         }
     }
 
-    let attendees = &input.attendees;
     let musicians = &input.musicians;
     let mut score: i64 = 0;
-    for i in 0..attendees.len() {
-        for k in 0..musicians.len() {
-            let intersection = is_occluded(solution, attendees[i].pos, k);
-            if intersection == Intersection::Hit {
-                continue;
-            }
-            let taste = attendees[i].tastes[musicians[k].instrument as usize];
-            // 接している場合はスコアが小さくなる方向に丸める
-            if intersection == Intersection::Tagent {
-                if taste > 0.0 {
-                    continue;
-                }
-            }
-
-            let diff = attendees[i].pos - solution.placements[k];
-            let squared_distance = diff.dot(diff);
-            let s = (1_000_000.0 * taste / squared_distance).ceil() as i64;
-            score += s;
-        }
+    for k in 0..musicians.len() {
+        let score_k = calculate_score_of_a_musician(input, solution, k);
+        score += score_k.iter().sum::<i64>();
     }
     score
+}
+
+// k番目の musician に関するスコアを返す。
+// 戻り値は配列であり、i番目の値はi番目の客からkが得るスコアである。
+fn calculate_score_of_a_musician(input: &input::Input, solution: &Solution, k: usize) -> Vec<i64> {
+    let attendees = &input.attendees;
+    let musicians = &input.musicians;
+
+    let mut scores = vec![0; attendees.len()];
+    for i in 0..attendees.len() {
+        let intersection = is_occluded(solution, attendees[i].pos, k);
+        if intersection == Intersection::Hit {
+            continue;
+        }
+        let taste = attendees[i].tastes[musicians[k].instrument as usize];
+        // 接している場合はスコアが小さくなる方向に丸める
+        if intersection == Intersection::Tagent {
+            if taste > 0.0 {
+                continue;
+            }
+        }
+
+        let diff = attendees[i].pos - solution.placements[k];
+        let squared_distance = diff.dot(diff);
+        let s = (1_000_000.0 * taste / squared_distance).ceil() as i64;
+        scores[i] = s;
+    }
+    scores
 }
 
 pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::Result<()> {
