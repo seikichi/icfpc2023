@@ -27,7 +27,7 @@ pub struct Attendee {
     pub tastes: Vec<f32>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct Solution {
     pub placements: Vec<Vec2>,
 }
@@ -48,17 +48,6 @@ struct Opt {
 
 #[derive(Clone, Debug)]
 pub struct Output {}
-
-#[derive(Clone, Debug, serde::Serialize)]
-pub struct RawSolutionPlacement {
-    pub x: f32,
-    pub y: f32,
-}
-
-#[derive(Clone, Debug, serde::Serialize)]
-pub struct RawSolution {
-    pub placements: Vec<RawSolutionPlacement>,
-}
 
 pub fn run() -> anyhow::Result<Output> {
     let opt = Opt::from_args();
@@ -102,14 +91,7 @@ pub fn run() -> anyhow::Result<Output> {
     // SOLVER DONE
 
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
-    let raw_solution = RawSolution {
-        placements: solution
-            .placements
-            .iter()
-            .map(|v| RawSolutionPlacement { x: v.x, y: v.y })
-            .collect(),
-    };
-    let output_json = serde_json::to_string(&raw_solution)?;
+    let output_json = serde_json::to_string(&solution)?;
     info!("output JSON to: {}", output_filename.to_string_lossy());
     fs::write(output_filename, output_json)?;
 
