@@ -2,10 +2,10 @@ use std::{io, path::Path};
 
 use super::*;
 
-struct Input {
-    room: Room,
-    musicians: Vec<Musican>,
-    attendees: Vec<Attendee>,
+pub struct Input {
+    pub room: Room,
+    pub musicians: Vec<Musican>,
+    pub attendees: Vec<Attendee>,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -26,12 +26,12 @@ struct RawAttendee {
     tastes: Vec<f32>,
 }
 
-fn load_from_file(path: &Path) -> io::Result<Input> {
+pub fn load_from_file(path: &Path) -> io::Result<Input> {
     let s = std::fs::read_to_string(path)?;
     load_from_str(&s)
 }
 
-fn load_from_str(s: &str) -> io::Result<Input> {
+pub fn load_from_str(s: &str) -> io::Result<Input> {
     let input: RawInput = serde_json::from_str(s)?;
     let room = Room {
         size: Vec2::new(input.room_width, input.room_height),
