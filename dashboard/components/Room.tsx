@@ -126,7 +126,11 @@ export default function Roomt() {
 
     const ctx = canvas.getContext("2d")!;
 
-    ctx.scale(0.2, 0.2);
+    // reset
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.scale(400 / 1000.0, 400 / 1000.0);
     ctx.fillStyle = "gray";
     ctx.fillRect(0, 0, room.room_width, room.room_height);
 
@@ -147,7 +151,7 @@ export default function Roomt() {
       <Title>Hello, world</Title>
       <Text>This is Room!</Text>
 
-      <canvas width="200" height="200" ref={ref} />
+      <canvas width="400" height="400" ref={ref} />
     </Card>
   );
 }
