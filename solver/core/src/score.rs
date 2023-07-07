@@ -43,6 +43,15 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
     let musicians = &input.musicians;
     let placements = &solution.placements;
 
+    // musician の人数と plaments 内の座標の数が一致していることを確かめる
+    if musicians.len() != placements.len() {
+        anyhow::bail!(
+            "invalid placement: invalid number of placements: n_musicians={}, n_placements={}",
+            musicians.len(),
+            placements.len()
+        );
+    }
+
     // すべての musician がステージ内に入っていることを確かめる
     for k in 0..musicians.len() {
         let p = placements[k];
@@ -61,7 +70,7 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
             let diff = p1 - p2;
             let squared_distance = diff.dot(diff);
             if squared_distance < 10.0 * 10.0 {
-                anyhow::bail!("invalid placement: musicans are too close: k1={k1}, k2={k2}")
+                anyhow::bail!("invalid placement: musicians are too close: k1={k1}, k2={k2}")
             }
         }
     }
@@ -120,4 +129,41 @@ fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) ->
         return Intersection::Hit;
     }
     return Intersection::Tagent;
+}
+
+#[test]
+fn test_line_circle_intersection() {
+    // hit
+    {
+        let p1 = Vec2::new(-2.0, 0.0);
+        let p2 = Vec2::new(2.0, 0.0);
+        let r = 1.0;
+        let center = Vec2::new(0.0, 0.0);
+        assert_eq!(
+            line_circle_intersection(p1, p2, r, center),
+            Intersection::Hit
+        );
+    }
+    // tangent
+    {
+        let p1 = Vec2::new(-2.0, 1.0);
+        let p2 = Vec2::new(2.0, 1.0);
+        let r = 1.0;
+        let center = Vec2::new(0.0, 0.0);
+        assert_eq!(
+            line_circle_intersection(p1, p2, r, center),
+            Intersection::Tagent
+        );
+    }
+    // none
+    {
+        let p1 = Vec2::new(-2.0, 2.0);
+        let p2 = Vec2::new(2.0, 2.0);
+        let r = 1.0;
+        let center = Vec2::new(0.0, 0.0);
+        assert_eq!(
+            line_circle_intersection(p1, p2, r, center),
+            Intersection::None
+        );
+    }
 }
