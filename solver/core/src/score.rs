@@ -121,3 +121,40 @@ fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) ->
     }
     return Intersection::Tagent;
 }
+
+#[test]
+fn test_line_circle_intersection() {
+    // hit
+    {
+        let p1 = Vec2::new(-2.0, 0.0);
+        let p2 = Vec2::new(2.0, 0.0);
+        let r = 1.0;
+        let center = Vec2::new(0.0, 0.0);
+        assert_eq!(
+            line_circle_intersection(p1, p2, r, center),
+            Intersection::Hit
+        );
+    }
+    // tangent
+    {
+        let p1 = Vec2::new(-2.0, 1.0);
+        let p2 = Vec2::new(2.0, 1.0);
+        let r = 1.0;
+        let center = Vec2::new(0.0, 0.0);
+        assert_eq!(
+            line_circle_intersection(p1, p2, r, center),
+            Intersection::Tagent
+        );
+    }
+    // none
+    {
+        let p1 = Vec2::new(-2.0, 2.0);
+        let p2 = Vec2::new(2.0, 2.0);
+        let r = 1.0;
+        let center = Vec2::new(0.0, 0.0);
+        assert_eq!(
+            line_circle_intersection(p1, p2, r, center),
+            Intersection::None
+        );
+    }
+}
