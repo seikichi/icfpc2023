@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import logger from "@/lib/logger";
 import UsersTable from "@/components/UserTable";
 import Invoke from "@/components/Invoke";
+import Room from "@/components/Room";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,9 @@ export default async function Home() {
       <Text>
         A list of users retrieved from a MySQL database (PlanetScale).
       </Text>
+
+      <Room />
+
       <Card className="mt-6">
         <UsersTable users={users} />
       </Card>
