@@ -5,7 +5,7 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> i64 {
         Ok(()) => {}
         Err(e) => {
             eprintln!("ERROR: {e}");
-            return i64::MIN / 4;
+            return 0;
         }
     }
 
@@ -15,7 +15,7 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> i64 {
         let score_k = calculate_score_of_a_musician(input, solution, k);
         score += score_k.iter().sum::<i64>();
     }
-    score
+    score.max(0)
 }
 
 // k番目の musician に関するスコアを返す。
@@ -140,6 +140,17 @@ fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) ->
         return Intersection::Hit;
     }
     return Intersection::Tagent;
+}
+
+#[test]
+fn test_calculate() {
+    let input_path = "../../solver/problems/1.json";
+    let input = input::load_from_file(input_path.clone()).unwrap();
+    let solution_path = "../../solver/test_data/1.json";
+    let solution = output::load_from_file(solution_path.clone()).unwrap();
+    let score = calculate(&input, &solution);
+    // TODO
+    // assert!(score == 1234);
 }
 
 #[test]

@@ -1,5 +1,6 @@
 mod ai;
 mod input;
+mod output;
 mod score;
 
 use crate::ai::{ChainedAI, HeadAI};
@@ -30,7 +31,7 @@ pub struct Attendee {
     pub tastes: Vec<f32>,
 }
 
-#[derive(Clone, Debug, serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Solution {
     pub placements: Vec<Vec2>,
 }
