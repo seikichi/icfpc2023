@@ -1,3 +1,5 @@
+mod input;
+
 use glam::Vec2;
 
 type Instrument = i32;
@@ -15,9 +17,9 @@ struct Musican {
 }
 
 #[derive(Clone, Debug)]
-struct Atenndee {
+struct Attendee {
     pos: Vec2,
-    tastes: Vec<Instrument>,
+    tastes: Vec<f32>,
 }
 
 #[derive(Clone, Debug)]
