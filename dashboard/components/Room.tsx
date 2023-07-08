@@ -3,11 +3,13 @@
 import { Room, Solution } from "@/lib/schema";
 import { Card, Title, Flex, Button } from "@tremor/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import wasm, { calculate } from "wasm";
 
 const MAX_CANVAS_SIZE = 1000;
 
 export default function RoomtComponent() {
-  const problemId = 1;
+  const problemId = 42;
+
   const [room, setRoom] = useState<Room | null>(null);
   const [solution, setSolution] = useState<Solution | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -27,6 +29,27 @@ export default function RoomtComponent() {
       }
     })();
   }, [problemId]);
+
+  useEffect(() => {
+    if (room === null || solution === null) {
+      return;
+    }
+    console.log("start calculate");
+    (async () => {
+      try {
+        await wasm();
+        const score = calculate(
+          JSON.stringify(room),
+          JSON.stringify({
+            placements: solution.placements.map(({ x, y }) => [x, y]),
+          })
+        );
+        console.log(score);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [room, solution]);
 
   useEffect(() => {
     if (canvasRef.current === null || room === null) {
