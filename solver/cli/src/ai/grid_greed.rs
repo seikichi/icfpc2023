@@ -39,7 +39,7 @@ impl HeadAI for GridGreedAI {
                     candidates.push(Vec2 { x, y });
                 }
             }
-            let sampling_num = candidates.len().min(1000.max(musicians.len() * 10));
+            let sampling_num = candidates.len().min(10000.max(musicians.len() * 10));
             candidates.shuffle(&mut rng);
             candidates.resize(sampling_num, Vec2::ZERO);
             // 各musiciansについて、candidatesのoclussionを無視したスコアを計算

@@ -1,3 +1,5 @@
+use core::score::validate_solution;
+
 use glam::Vec2;
 
 use crate::ai::ChainedAI;
@@ -14,10 +16,12 @@ impl ChainedAI for GreedMoveAI {
         let stage_size = input.room.stage_size;
         let mut move_d = 4.0;
         let mut solution = initial_solution.clone();
+        let mut score_calc = score::DifferentialCalculator::new(input, &solution);
         let mut prev_score = score::calculate(input, &solution).unwrap();
         for _iter in 0..5 {
             for k in 0..solution.placements.len() {
                 for dir in 0..4 {
+                    let old_score_calc = score_calc.clone();
                     let dx = [1.0, 0.0, -1.0, 0.0][dir];
                     let dy = [0.0, 1.0, 0.0, -1.0][dir];
                     let prev_pos = solution.placements[k];
@@ -26,16 +30,13 @@ impl ChainedAI for GreedMoveAI {
                     p.y = p.y.max(stage_pos.y + 10.0);
                     p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
                     p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
+                    let new_score = score_calc.move_one(input, &solution, k, p);
                     solution.placements[k] = p;
-                    let new_score = score::calculate(input, &solution);
-                    if let Some(score) = new_score {
-                        if score > prev_score {
-                            prev_score = score;
-                        } else {
-                            solution.placements[k] = prev_pos;
-                        }
+                    if new_score > prev_score && validate_solution(input, &solution).is_ok() {
+                        prev_score = new_score;
                     } else {
                         solution.placements[k] = prev_pos;
+                        score_calc = old_score_calc;
                     }
                 }
             }
