@@ -36,6 +36,17 @@ pub struct Solution {
     pub placements: Vec<Vec2>,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct RawPlacement {
+    x: f32,
+    y: f32,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct RawSolution {
+    placements: Vec<RawPlacement>,
+}
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = "solver", about = "A solver of ICFPC 2023 problems")]
 struct Opt {
@@ -108,9 +119,16 @@ pub fn run() -> anyhow::Result<Output> {
     let input = input::load_from_file(opt.input_path.clone())?;
 
     let solution = head_ai.solve(&input);
+    let raw_solution = RawSolution {
+        placements: solution
+            .placements
+            .iter()
+            .map(|p| RawPlacement { x: p.x, y: p.y })
+            .collect(),
+    };
 
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
-    let output_json = serde_json::to_string(&solution)?;
+    let output_json = serde_json::to_string(&raw_solution)?;
     info!("output JSON to: {}", output_filename.to_string_lossy());
     fs::write(output_filename, output_json)?;
 
