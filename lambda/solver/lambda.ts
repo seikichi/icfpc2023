@@ -72,7 +72,10 @@ export async function main(params: Params) {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(problemPath, await res.text(), { encoding: "utf-8" });
 
-    const command = `${solverPath} -i ${problemPath} -o ${outDir}`;
+    const args = params.args.join(" ");
+    const command = `${solverPath} -i ${problemPath} -o ${outDir} ${args}`;
+    console.log(`run: ${command}`);
+
     const { stdout, stderr } = await exec(command);
 
     const contents = await fs.readFile(path.join(outDir, `${problemId}.json`), {
