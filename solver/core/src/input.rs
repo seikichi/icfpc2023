@@ -7,6 +7,7 @@ pub struct Input {
     pub room: Room,
     pub musicians: Vec<Musican>,
     pub attendees: Vec<Attendee>,
+    pub pillars: Vec<Pillar>,
     pub version: u8,
 }
 
@@ -19,6 +20,7 @@ pub struct RawInput {
     stage_bottom_left: Vec<f32>,
     musicians: Vec<i32>,
     attendees: Vec<RawAttendee>,
+    pillars: Vec<RawPillars>,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -26,6 +28,12 @@ pub struct RawAttendee {
     x: f32,
     y: f32,
     tastes: Vec<f32>,
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+pub struct RawPillars {
+    center: Vec2,
+    radius: f32,
 }
 
 pub fn load_from_file<P: AsRef<Path>>(path: P, problem_number: i32) -> io::Result<Input> {
@@ -54,10 +62,19 @@ pub fn load_from_str(s: &str, problem_number: i32) -> io::Result<Input> {
             tastes: a.tastes.clone(),
         })
         .collect();
+    let pillars = input
+        .pillars
+        .iter()
+        .map(|p| Pillar {
+            center: p.center,
+            radius: p.radius,
+        })
+        .collect();
     Ok(Input {
         room,
         musicians,
         attendees,
+        pillars,
         version,
     })
 }

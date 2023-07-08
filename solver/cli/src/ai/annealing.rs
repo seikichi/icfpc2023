@@ -67,8 +67,7 @@ impl ChainedAI for AnnealingAI {
                     if musicians[k1].instrument == musicians[k2].instrument {
                         continue;
                     }
-                    let new_score = score_calc.swap(input, &solution, k1, k2);
-                    solution.placements.swap(k1, k2);
+                    let new_score = score_calc.swap(input, &mut solution, k1, k2);
                     new_score
                 }
                 4..=10 => {
@@ -86,8 +85,7 @@ impl ChainedAI for AnnealingAI {
                     p.y = p.y.max(stage_pos.y + 10.0);
                     p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
                     p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
-                    let new_score = score_calc.move_one(input, &solution, k, p);
-                    solution.placements[k] = p;
+                    let new_score = score_calc.move_one(input, &mut solution, k, p);
                     new_score
                 }
                 _ => {
