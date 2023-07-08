@@ -211,6 +211,7 @@ fn test_differential_calculator2() {
         room,
         attendees,
         musicians,
+        pillars: vec![],
         version: 1,
     };
     let mut current_solution = Solution {
