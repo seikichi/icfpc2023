@@ -31,22 +31,22 @@ export class InfraStack extends cdk.Stack {
     });
 
     // SNS & SQS & Lambda test
-    const topic = new sns.Topic(this, "Topic");
-    const queue = new sqs.Queue(this, "Queue", {
-      visibilityTimeout: cdk.Duration.minutes(15),
-    });
-    topic.addSubscription(
-      new SqsSubscription(queue, {
-        filterPolicy: {
-          kind: sns.SubscriptionFilter.stringFilter({ allowlist: ["sandbox"] }),
-        },
-      })
-    );
-    const sandbox = new lambda.DockerImageFunction(this, "Sandbox", {
-      code: lambda.DockerImageCode.fromImageAsset("../lambda/sandbox"),
-      timeout: cdk.Duration.minutes(15),
-      memorySize: 128,
-    });
-    sandbox.addEventSource(new SqsEventSource(queue));
+    // const topic = new sns.Topic(this, "Topic");
+    // const queue = new sqs.Queue(this, "Queue", {
+    //   visibilityTimeout: cdk.Duration.minutes(15),
+    // });
+    // topic.addSubscription(
+    //   new SqsSubscription(queue, {
+    //     filterPolicy: {
+    //       kind: sns.SubscriptionFilter.stringFilter({ allowlist: ["sandbox"] }),
+    //     },
+    //   })
+    // );
+    // const sandbox = new lambda.DockerImageFunction(this, "Sandbox", {
+    //   code: lambda.DockerImageCode.fromImageAsset("../lambda/sandbox"),
+    //   timeout: cdk.Duration.minutes(15),
+    //   memorySize: 128,
+    // });
+    // sandbox.addEventSource(new SqsEventSource(queue));
   }
 }
