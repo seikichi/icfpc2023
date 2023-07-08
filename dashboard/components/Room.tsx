@@ -60,6 +60,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
           return score_of_a_musician.reduce((a, b) => a + Number(b), 0);
         });
         console.log(
+          "musician_scores:",
           solution.placements.map(({ x, y }, i) => {
             return { x, y, score: musician_scores[i] };
           })
@@ -117,7 +118,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
     const [stage_x, stage_y] = room.stage_bottom_left;
     ctx.fillRect(stage_x, stage_y, room.stage_width, room.stage_height);
 
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "red";
     for (const { x, y } of room.attendees) {
       const circle = new Path2D();
       circle.arc(x, y, 5, 0, 2 * Math.PI);
