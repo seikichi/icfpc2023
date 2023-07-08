@@ -24,7 +24,7 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> Option<i64> {
 
 // k番目の musician に関するスコアを返す。
 // 戻り値は配列であり、i番目の値はi番目の客からkが得るスコアである。
-fn calculate_score_of_a_musician(input: &input::Input, solution: &Solution, k: usize) -> Vec<i64> {
+pub fn calculate_score_of_a_musician(input: &input::Input, solution: &Solution, k: usize) -> Vec<i64> {
     let attendees = &input.attendees;
     let musicians = &input.musicians;
 

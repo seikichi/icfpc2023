@@ -32,6 +32,16 @@ pub fn calculate(input: &str, solution: &str) -> i64 {
 }
 
 #[wasm_bindgen]
+pub fn calculate_score_of_a_musician(input: &str, solution: &str, k: usize) -> Vec<i64> {
+    utils::set_panic_hook();
+
+    let input = core::input::load_from_str(input).unwrap();
+    let solution = core::output::load_from_str(solution).unwrap();
+
+    core::score::calculate_score_of_a_musician(&input, &solution, k)
+}
+
+#[wasm_bindgen]
 pub fn greet(name: &str) {
     alert(&format!("Hello, {}!", name));
 }
