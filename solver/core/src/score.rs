@@ -161,7 +161,7 @@ fn test_differential_calculator() {
     let input = input::load_from_file(input_path.clone()).unwrap();
     let solution_path = "../../solver/test_data/42.json";
 
-    let current_solution = output::load_from_file(solution_path.clone()).unwrap();
+    let mut current_solution = output::load_from_file(solution_path.clone()).unwrap();
     let current_score = calculate(&input, &current_solution).unwrap();
     // assert!(current_score == 6736676);
 
@@ -173,6 +173,19 @@ fn test_differential_calculator() {
 
     // スコアは変化しないはず
     assert_eq!(current_score, next_score);
+
+    // k番目の musician を移動させて、もう一回元の位置に戻す
+    for k in 0..current_solution.placements.len() {
+        let prev_pos = current_solution.placements[k];
+        let pos = current_solution.placements[k]
+            + Vec2::new(27.3 * (k % 11) as f32, 11.1 * (k % 7) as f32);
+        dc.move_one(&input, &current_solution, k, pos);
+        current_solution.placements[k] = pos;
+        let next_score = dc.move_one(&input, &current_solution, k, prev_pos);
+        current_solution.placements[k] = prev_pos;
+        // スコアは変化しないはず
+        assert_eq!(current_score, next_score);
+    }
 }
 
 #[test]
