@@ -185,11 +185,11 @@ fn test_differential_calculator2() {
     let attendees = vec![
         Attendee {
             pos: Vec2::new(10.0, 10.0),
-            tastes: vec![10.0, -1.0],
+            tastes: vec![10.0, 1.0],
         },
         Attendee {
             pos: Vec2::new(10.0, 30.0),
-            tastes: vec![20.0, -2.0],
+            tastes: vec![20.0, 2.0],
         },
     ];
     let musicians = vec![Musican { instrument: 0 }, Musican { instrument: 1 }];
@@ -207,20 +207,49 @@ fn test_differential_calculator2() {
     // assert!(dc.n_occlusion[0][1] == 0);
     // assert!(dc.n_occlusion[1][0] == 1);
     // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 0);
 
-    dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 30.0));
+    let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 30.0));
     current_solution.placements[0] = Vec2::new(40.0, 30.0);
     // assert!(dc.n_occlusion[0][0] == 0);
     // assert!(dc.n_occlusion[0][1] == 0);
     // assert!(dc.n_occlusion[1][0] == 0);
     // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 0);
+    let score1 = calculate(&input, &current_solution).unwrap();
+    assert!(score1 == score2);
 
-    dc.move_one(&input, &current_solution, 1, Vec2::new(60.0, 30.0));
-    current_solution.placements[1] = Vec2::new(50.0, 30.0);
+    let score2 = dc.move_one(&input, &current_solution, 1, Vec2::new(60.0, 30.0));
+    current_solution.placements[1] = Vec2::new(60.0, 30.0);
     // assert!(dc.n_occlusion[0][0] == 0);
     // assert!(dc.n_occlusion[0][1] == 0);
     // assert!(dc.n_occlusion[1][0] == 0);
     // assert!(dc.n_occlusion[1][1] == 1);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 0);
+    let score1 = calculate(&input, &current_solution).unwrap();
+    assert!(score1 == score2);
+
+    let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 25.0));
+    current_solution.placements[0] = Vec2::new(40.0, 25.0);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 1);
+    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 1);
+    let score1 = calculate(&input, &current_solution).unwrap();
+    assert!(score1 == score2);
 }
 
 #[test]
