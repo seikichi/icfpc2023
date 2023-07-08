@@ -13,9 +13,7 @@ import {
 } from "@tremor/react";
 import Link from "next/link";
 
-// export const dynamic = "force-dynamic";
-
-// const NUM_PROBLEMS = 55;
+export const revalidate = 600;
 
 export default async function Page() {
   const problems = await prisma.problem.findMany();
