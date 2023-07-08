@@ -36,6 +36,8 @@ model Solution {
   bucketKey  String   @db.VarChar(48)
   elapsedSec Int
 
+  submissionId String? @db.VarChar(64)
+
   problem   Problem    @relation(fields: [problemId], references: [id])
   challenge Challenge? @relation(fields: [challengeId], references: [id])
 
