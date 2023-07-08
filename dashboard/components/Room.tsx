@@ -59,6 +59,11 @@ export default function RoomtComponent(props: RoomtComponentProps) {
           );
           return score_of_a_musician.reduce((a, b) => a + Number(b), 0);
         });
+        console.log(
+          solution.placements.map(({ x, y }, i) => {
+            return { x, y, score: musician_scores[i] };
+          })
+        );
         setMusiciansScores(musician_scores);
       } catch (e) {
         alert(JSON.stringify(e));
@@ -123,12 +128,12 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       return;
     }
 
-    for (const [i, { x, y }] of Object.entries(solution.placements)) {
+    solution.placements.forEach(({ x, y }, i) => {
       if (musician_scores === null) {
         ctx.fillStyle = "white";
       } else {
         const color = mapValueToColor(
-          musician_scores[Number(i)],
+          musician_scores[i],
           Math.min(...musician_scores),
           Math.max(...musician_scores)
         );
@@ -137,7 +142,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       const circle = new Path2D();
       circle.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.fill(circle);
-    }
+    });
   }, [canvasRef, room, solution, musician_scores]);
 
   const clearSolution = useCallback(() => {
