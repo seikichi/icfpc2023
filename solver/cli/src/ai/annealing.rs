@@ -1,7 +1,3 @@
-use std::f32::consts::PI;
-use std::time::{Duration, Instant};
-use std::usize;
-
 use crate::ai::ChainedAI;
 use crate::input::Input;
 use crate::score;
@@ -9,6 +5,8 @@ use crate::Solution;
 use glam::Vec2;
 use log::info;
 use rand::prelude::*;
+use std::f32::consts::PI;
+use std::time::{Duration, Instant};
 
 pub struct AnnealingAI {
     pub time_limit: Duration,
