@@ -1,6 +1,7 @@
 use crate::input::Input;
 
 use super::*;
+use geo::*;
 
 // スコアを計算する。
 // solution が不正である場合、None を返す。
@@ -92,13 +93,6 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
     Ok(())
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Intersection {
-    None,
-    Tagent,
-    Hit,
-}
-
 // p1 と placements[k] を結ぶ線分が遮蔽されているかどうかを返す。
 // Hit: 遮蔽されている
 // None: 遮蔽されていない
@@ -111,7 +105,7 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
         if k == k_ {
             continue;
         }
-        let intersection = line_circle_intersection(p1, p2, 5.0, placements[k_]);
+        let intersection = segment_circle_intersection(p1, p2, 5.0, placements[k_]);
         match intersection {
             Intersection::Hit => return Intersection::Hit,
             Intersection::None => {}
@@ -125,24 +119,6 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
     } else {
         Intersection::None
     }
-}
-
-fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) -> Intersection {
-    p1 -= center;
-    p2 -= center;
-
-    let dx = p2.x - p1.x;
-    let dy = p2.y - p1.y;
-    let dr_sq = dx * dx + dy * dy;
-    let cross = p1.x * p2.y - p2.x * p1.y;
-    let det = r * r * dr_sq - cross * cross;
-    if det < -1e-8 {
-        return Intersection::None;
-    }
-    if det > 1e-8 {
-        return Intersection::Hit;
-    }
-    return Intersection::Tagent;
 }
 
 #[test]
@@ -265,61 +241,6 @@ fn test_differential_calculator2() {
     assert!(score1 == score2);
 }
 
-#[test]
-fn test_line_circle_intersection() {
-    // hit
-    {
-        let p1 = Vec2::new(-2.0, 0.0);
-        let p2 = Vec2::new(2.0, 0.0);
-        let r = 1.0;
-        let center = Vec2::new(0.0, 0.0);
-        assert_eq!(
-            line_circle_intersection(p1, p2, r, center),
-            Intersection::Hit
-        );
-    }
-    // tangent
-    {
-        let p1 = Vec2::new(-2.0, 1.0);
-        let p2 = Vec2::new(2.0, 1.0);
-        let r = 1.0;
-        let center = Vec2::new(0.0, 0.0);
-        assert_eq!(
-            line_circle_intersection(p1, p2, r, center),
-            Intersection::Tagent
-        );
-    }
-    // none
-    {
-        let p1 = Vec2::new(-2.0, 2.0);
-        let p2 = Vec2::new(2.0, 2.0);
-        let r = 1.0;
-        let center = Vec2::new(0.0, 0.0);
-        assert_eq!(
-            line_circle_intersection(p1, p2, r, center),
-            Intersection::None
-        );
-
-        // let p1 = Vec2::new(12.0, 1.0);
-        // let p2 = Vec2::new(22.0, 1.0);
-        // let r = 1.0;
-        // let center = Vec2::new(0.0, 0.0);
-        // assert_eq!(
-        //     line_circle_intersection(p1, p2, r, center),
-        //     Intersection::None
-        // );
-
-        // let p1 = Vec2::new(12.0, 0.0);
-        // let p2 = Vec2::new(22.0, 0.0);
-        // let r = 1.0;
-        // let center = Vec2::new(0.0, 0.0);
-        // assert_eq!(
-        //     line_circle_intersection(p1, p2, r, center),
-        //     Intersection::None
-        // );
-    }
-}
-
 // スコアを差分計算するための struct
 struct DifferentialCalculator {
     // n_occlusion[k][i]: k番目の musician と i番目の客の間が何人の musician によって遮蔽されているか
@@ -358,7 +279,7 @@ impl DifferentialCalculator {
                     if k == k_ {
                         continue;
                     }
-                    let intersection = line_circle_intersection(p1, p2, 5.0, placements[k_]);
+                    let intersection = segment_circle_intersection(p1, p2, 5.0, placements[k_]);
                     match intersection {
                         Intersection::Hit => {
                             self.n_occlusion[k][i] += 1;
@@ -409,7 +330,7 @@ impl DifferentialCalculator {
             let p1 = current_solution.placements[k_];
             for i in 0..attendees.len() {
                 let p2 = attendees[i].pos;
-                let intersection = line_circle_intersection(p1, p2, 5.0, current_k_pos);
+                let intersection = segment_circle_intersection(p1, p2, 5.0, current_k_pos);
                 match intersection {
                     Intersection::Hit => {
                         self.n_occlusion[k_][i] -= 1;
@@ -430,7 +351,7 @@ impl DifferentialCalculator {
             let p1 = current_solution.placements[k_];
             for i in 0..attendees.len() {
                 let p2 = attendees[i].pos;
-                let intersection = line_circle_intersection(p1, p2, 5.0, new_k_pos);
+                let intersection = segment_circle_intersection(p1, p2, 5.0, new_k_pos);
                 match intersection {
                     Intersection::Hit => {
                         self.n_occlusion[k_][i] += 1;
@@ -453,7 +374,7 @@ impl DifferentialCalculator {
                     continue;
                 }
                 let p3 = current_solution.placements[k_];
-                let intersection = line_circle_intersection(new_k_pos, p2, 5.0, p3);
+                let intersection = segment_circle_intersection(new_k_pos, p2, 5.0, p3);
                 match intersection {
                     Intersection::Hit => {
                         n_hit += 1;
