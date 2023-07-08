@@ -28,12 +28,12 @@ model Solution {
 
   challengeId Int?
 
-  createdAt  DateTime @default(now())
-  problemId  Int
-  score      Int
-  commitId   String   @db.VarChar(40)
-  args       Json
-  elapsedSec Int
+  createdAt DateTime @default(now())
+  problemId Int
+  score     Int
+  commitId  String   @db.VarChar(40)
+  args      String   @db.VarChar(64)
+  bucketKey String   @db.VarChar(48)
 
   problem   Problem    @relation(fields: [problemId], references: [id])
   challenge Challenge? @relation(fields: [challengeId], references: [id])
