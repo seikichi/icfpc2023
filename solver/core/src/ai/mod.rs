@@ -1,5 +1,7 @@
+mod annealing;
 mod grid;
 
+pub use annealing::*;
 pub use grid::*;
 
 use crate::input;
