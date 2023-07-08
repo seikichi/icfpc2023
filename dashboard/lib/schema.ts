@@ -11,3 +11,34 @@ export const Env = z.object({
 });
 
 export type Env = z.infer<typeof Env>;
+
+export const Room = z.object({
+  room_width: z.number().gt(0),
+  room_height: z.number().gt(0),
+  stage_width: z.number().gt(0),
+  stage_height: z.number().gt(0),
+  stage_bottom_left: z.tuple([z.number().min(0), z.number().min(0)]),
+  musicians: z.number().min(0).array().min(1),
+  attendees: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+      tastes: z.number().array().min(1),
+    })
+    .array()
+    .min(1),
+});
+
+export type Room = z.infer<typeof Room>;
+
+export const Solution = z.object({
+  placements: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .array()
+    .min(1),
+});
+
+export type Solution = z.infer<typeof Solution>;

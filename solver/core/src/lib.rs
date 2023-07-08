@@ -8,7 +8,7 @@ use crate::ai::{ChainedAI, HeadAI};
 use anyhow::bail;
 use glam::Vec2;
 use log::info;
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, time::Duration};
 use structopt::StructOpt;
 
 pub type Instrument = i32;
@@ -36,6 +36,17 @@ pub struct Solution {
     pub placements: Vec<Vec2>,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct RawPlacement {
+    x: f32,
+    y: f32,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct RawSolution {
+    placements: Vec<RawPlacement>,
+}
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = "solver", about = "A solver of ICFPC 2023 problems")]
 struct Opt {
@@ -55,6 +66,9 @@ struct Opt {
 
     #[structopt(short = "q", help = "disable debug log")]
     quiet: bool,
+
+    #[structopt(long = "annealing-seconds", default_value = "10")]
+    annealing_seconds: u64,
 }
 
 fn parse_ai_string(
@@ -68,26 +82,15 @@ fn parse_ai_string(
         x => bail!("'{x}' is not a HeadAI"),
     };
     let mut chained_ais = vec![];
-    // for name in &parts[1..] {
-    //     let chained_ai: Box<dyn ai::ChainedAI> = match *name {
-    //         "Refine" => Box::new(ai::RefineAi {
-    //             n_iters: opt.refine_iters,
-    //             algorithm: match opt.refine_algorithm.as_str() {
-    //                 "hill" | "hillclimbing" => ai::OptimizeAlgorithm::HillClimbing,
-    //                 "annealing" => ai::OptimizeAlgorithm::Annealing,
-    //                 x => bail!("'{x}' is not OptimizeAlgorithm"),
-    //             },
-    //             initial_temperature: opt.refine_initial_temperature,
-    //             dp_divide_max: opt.refine_dp_divide_max,
-    //             show_intermediates: opt.refine_show_intermediates,
-    //         }),
-    //         "Annealing" => Box::new(ai::AnnealingAI {
-    //             time_limit: Duration::from_secs(opt.annealing_seconds),
-    //         }),
-    //         x => bail!("'{x}' is not a ChainedAI"),
-    //     };
-    //     chained_ais.push(chained_ai);
-    // }
+    for name in &parts[1..] {
+        let chained_ai: Box<dyn ai::ChainedAI> = match *name {
+            "Annealing" => Box::new(ai::AnnealingAI {
+                time_limit: Duration::from_secs(opt.annealing_seconds),
+            }),
+            x => bail!("'{x}' is not a ChainedAI"),
+        };
+        chained_ais.push(chained_ai);
+    }
     Ok((head_ai, chained_ais))
 }
 
@@ -117,9 +120,16 @@ pub fn run() -> anyhow::Result<Output> {
     let input = input::load_from_file(opt.input_path.clone())?;
 
     let solution = head_ai.solve(&input);
+    let raw_solution = RawSolution {
+        placements: solution
+            .placements
+            .iter()
+            .map(|p| RawPlacement { x: p.x, y: p.y })
+            .collect(),
+    };
 
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
-    let output_json = serde_json::to_string(&solution)?;
+    let output_json = serde_json::to_string(&raw_solution)?;
     info!("output JSON to: {}", output_filename.to_string_lossy());
     fs::write(output_filename, output_json)?;
 

@@ -1,6 +1,8 @@
+mod annealing;
 mod grid;
 mod grid_greed;
 
+pub use annealing::*;
 pub use grid::*;
 pub use grid_greed::*;
 
