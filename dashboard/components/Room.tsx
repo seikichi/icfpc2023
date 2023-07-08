@@ -7,8 +7,12 @@ import wasm, { calculate } from "wasm";
 
 const MAX_CANVAS_SIZE = 1000;
 
-export default function RoomtComponent() {
-  const problemId = 42;
+export type RoomtComponentProps = {
+  problemId: number;
+};
+
+export default function RoomtComponent(props: RoomtComponentProps) {
+  const problemId = props.problemId;
 
   const [room, setRoom] = useState<Room | null>(null);
   const [solution, setSolution] = useState<Solution | null>(null);

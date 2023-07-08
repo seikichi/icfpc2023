@@ -10,7 +10,7 @@ export default async function Page() {
       <Title>実験場</Title>
 
       <Invoke />
-      <Room />
+      <Room problemId={42}/>
     </main>
   );
 }
