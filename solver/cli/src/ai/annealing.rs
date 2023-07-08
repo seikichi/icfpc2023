@@ -31,6 +31,11 @@ impl ChainedAI for AnnealingAI {
         let initial_temperature = 100.0;
         let mut temperature = initial_temperature;
 
+        let mut valid_solution_count = 0;
+        let mut invalid_solution_count = 0;
+        let mut accept_count = 0;
+        let mut reject_count = 0;
+
         let mut iter = 0;
         loop {
             // check time limit
@@ -38,7 +43,31 @@ impl ChainedAI for AnnealingAI {
             if iter % 5 == 0 {
                 let elapsed = Instant::now() - start_at;
                 if elapsed >= self.time_limit {
+                    // print stats
                     info!("iter = {}", iter);
+                    info!(
+                        "#valid_move   = {} ({:.2} %)",
+                        valid_solution_count,
+                        100.0 * valid_solution_count as f64
+                            / (valid_solution_count + invalid_solution_count) as f64
+                    );
+                    info!(
+                        "#invalid_move = {} ({:.2} %)",
+                        invalid_solution_count,
+                        100.0 * invalid_solution_count as f64
+                            / (valid_solution_count + invalid_solution_count) as f64
+                    );
+                    info!(
+                        "#accept = {} ({:.2} %)",
+                        accept_count,
+                        100.0 * accept_count as f64 / (accept_count + reject_count) as f64
+                    );
+                    info!(
+                        "#reject = {} ({:.2} %)",
+                        reject_count,
+                        100.0 * reject_count as f64 / (accept_count + reject_count) as f64
+                    );
+                    // done!
                     return best_solution;
                 }
 
@@ -93,14 +122,25 @@ impl ChainedAI for AnnealingAI {
                 }
             };
 
+            let is_valid_solution = score::validate_solution(input, &solution).is_ok();
+            if is_valid_solution {
+                valid_solution_count += 1;
+            } else {
+                invalid_solution_count += 1;
+            }
+
             if iter % 100 == 0 {
-                info!("new_score = {:?}", new_score);
+                if is_valid_solution {
+                    info!("new_score = {}", new_score);
+                } else {
+                    info!("new_score = n/a");
+                }
             }
 
             // 新しい解を受理するか決める
             let accept = {
                 // 解が不正な場合は受理しない
-                if score::validate_solution(input, &solution).is_err() {
+                if !is_valid_solution {
                     false
                 }
                 // スコアが改善するなら必ず受理する
@@ -118,10 +158,12 @@ impl ChainedAI for AnnealingAI {
             if accept {
                 // accept candidate
                 current_score = new_score;
+                accept_count += 1;
             } else {
                 // reject candidate
                 solution = old_solution;
                 score_calc = old_score_calc;
+                reject_count += 1;
             }
 
             if current_score > best_score {
