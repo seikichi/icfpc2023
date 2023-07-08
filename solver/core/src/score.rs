@@ -147,13 +147,12 @@ fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) ->
 
 #[test]
 fn test_calculate() {
-    let input_path = "../../solver/problems/1.json";
+    let input_path = "../../solver/problems/42.json";
     let input = input::load_from_file(input_path.clone()).unwrap();
-    let solution_path = "../../solver/test_data/1.json";
+    let solution_path = "../../solver/test_data/42.json";
     let solution = output::load_from_file(solution_path.clone()).unwrap();
-    let score = calculate(&input, &solution);
-    // TODO
-    // assert!(score == 1234);
+    let score = calculate(&input, &solution).unwrap();
+    // assert!(score == 6736676);
 }
 
 #[test]
@@ -164,6 +163,7 @@ fn test_differential_calculator() {
 
     let current_solution = output::load_from_file(solution_path.clone()).unwrap();
     let current_score = calculate(&input, &current_solution).unwrap();
+    // assert!(current_score == 6736676);
 
     let mut dc = DifferentialCalculator::new(&input, &current_solution);
 
@@ -173,6 +173,83 @@ fn test_differential_calculator() {
 
     // スコアは変化しないはず
     assert_eq!(current_score, next_score);
+}
+
+#[test]
+fn test_differential_calculator2() {
+    let room = Room {
+        size: Vec2::new(100.0, 100.0),
+        stage_pos: Vec2::new(30.0, 0.0),
+        stage_size: Vec2::new(70.0, 100.0),
+    };
+    let attendees = vec![
+        Attendee {
+            pos: Vec2::new(10.0, 10.0),
+            tastes: vec![10.0, 1.0],
+        },
+        Attendee {
+            pos: Vec2::new(10.0, 30.0),
+            tastes: vec![20.0, 2.0],
+        },
+    ];
+    let musicians = vec![Musican { instrument: 0 }, Musican { instrument: 1 }];
+    let input = Input {
+        room,
+        attendees,
+        musicians,
+    };
+    let mut current_solution = Solution {
+        placements: vec![Vec2::new(40.0, 10.0), Vec2::new(60.0, 10.0)],
+    };
+    let mut dc = DifferentialCalculator::new(&input, &current_solution);
+    // println!("{:?}", dc.n_occlusion);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 1);
+    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 0);
+
+    let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 30.0));
+    current_solution.placements[0] = Vec2::new(40.0, 30.0);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 0);
+    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 0);
+    let score1 = calculate(&input, &current_solution).unwrap();
+    assert!(score1 == score2);
+
+    let score2 = dc.move_one(&input, &current_solution, 1, Vec2::new(60.0, 30.0));
+    current_solution.placements[1] = Vec2::new(60.0, 30.0);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 0);
+    // assert!(dc.n_occlusion[1][1] == 1);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 0);
+    let score1 = calculate(&input, &current_solution).unwrap();
+    assert!(score1 == score2);
+
+    let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 25.0));
+    current_solution.placements[0] = Vec2::new(40.0, 25.0);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 1);
+    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_tangent[0][0] == 0);
+    assert!(dc.n_tangent[0][1] == 0);
+    assert!(dc.n_tangent[1][0] == 0);
+    assert!(dc.n_tangent[1][1] == 1);
+    let score1 = calculate(&input, &current_solution).unwrap();
+    assert!(score1 == score2);
 }
 
 #[test]
@@ -209,6 +286,24 @@ fn test_line_circle_intersection() {
             line_circle_intersection(p1, p2, r, center),
             Intersection::None
         );
+
+        // let p1 = Vec2::new(12.0, 1.0);
+        // let p2 = Vec2::new(22.0, 1.0);
+        // let r = 1.0;
+        // let center = Vec2::new(0.0, 0.0);
+        // assert_eq!(
+        //     line_circle_intersection(p1, p2, r, center),
+        //     Intersection::None
+        // );
+
+        // let p1 = Vec2::new(12.0, 0.0);
+        // let p2 = Vec2::new(22.0, 0.0);
+        // let r = 1.0;
+        // let center = Vec2::new(0.0, 0.0);
+        // assert_eq!(
+        //     line_circle_intersection(p1, p2, r, center),
+        //     Intersection::None
+        // );
     }
 }
 
