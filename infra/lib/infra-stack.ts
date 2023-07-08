@@ -33,7 +33,7 @@ export class InfraStack extends cdk.Stack {
         file: "lambda/solver/Dockerfile",
       }),
       timeout: cdk.Duration.minutes(15),
-      memorySize: 2048,
+      memorySize: 4096,
       environment: {
         DATABASE_URL: env.DATABASE_URL,
         COMMIT_ID: commitHash,

@@ -24,7 +24,11 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> Option<i64> {
 
 // k番目の musician に関するスコアを返す。
 // 戻り値は配列であり、i番目の値はi番目の客からkが得るスコアである。
-pub fn calculate_score_of_a_musician(input: &input::Input, solution: &Solution, k: usize) -> Vec<i64> {
+pub fn calculate_score_of_a_musician(
+    input: &input::Input,
+    solution: &Solution,
+    k: usize,
+) -> Vec<i64> {
     let attendees = &input.attendees;
     let musicians = &input.musicians;
 
@@ -242,7 +246,8 @@ fn test_differential_calculator2() {
 }
 
 // スコアを差分計算するための struct
-struct DifferentialCalculator {
+#[derive(Clone, Debug)]
+pub struct DifferentialCalculator {
     // n_occlusion[k][i]: k番目の musician と i番目の客の間が何人の musician によって遮蔽されているか
     n_occlusion: Vec<Vec<u32>>,
 
@@ -252,7 +257,7 @@ struct DifferentialCalculator {
 
 impl DifferentialCalculator {
     // O(M^2 A)
-    fn new(input: &Input, solution: &Solution) -> Self {
+    pub fn new(input: &Input, solution: &Solution) -> Self {
         let n_attendees = input.attendees.len();
         let n_musicians = input.musicians.len();
         let mut dc = Self {
@@ -306,7 +311,7 @@ impl DifferentialCalculator {
         new_k_pos: Vec2,
     ) -> i64 {
         self.update_internal_state(input, current_solution, k, new_k_pos);
-        self.calculate_score(input, current_solution, k, new_k_pos)
+        self.calculate_score(input, current_solution, k, new_k_pos, None, None)
     }
 
     // 内部状態を k を new_k_pos に移動したあとの状態に更新する。
@@ -390,6 +395,27 @@ impl DifferentialCalculator {
         }
     }
 
+    pub fn swap(
+        &mut self,
+        input: &Input,
+        current_solution: &Solution,
+        k1: usize,
+        k2: usize,
+    ) -> i64 {
+        self.n_occlusion.swap(k1, k2);
+        self.n_tangent.swap(k1, k2);
+        let old_k1_pos = current_solution.placements[k1];
+        let old_k2_pos = current_solution.placements[k2];
+        self.calculate_score(
+            input,
+            current_solution,
+            k1,
+            old_k2_pos,
+            Some(k2),
+            Some(old_k1_pos),
+        )
+    }
+
     // k を new_k_pos に移動したあとのスコアを返す。
     // このスコアは負の値を取りうる。
     // 内部状態が移動後の状態となっていることが前提である。
@@ -400,12 +426,16 @@ impl DifferentialCalculator {
         current_solution: &Solution,
         k: usize,
         new_k_pos: Vec2,
+        k2: Option<usize>,
+        new_k2_pos: Option<Vec2>,
     ) -> i64 {
         let musicians = &input.musicians;
         let mut score = 0;
         for k_ in 0..musicians.len() {
             let pos = if k_ == k {
                 new_k_pos
+            } else if k2.is_some_and(|k2| k_ == k2) {
+                new_k2_pos.unwrap()
             } else {
                 current_solution.placements[k_]
             };

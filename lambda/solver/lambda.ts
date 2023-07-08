@@ -24,6 +24,7 @@ const prisma = new PrismaClient();
 
 const SolverEvent = z.object({
   problemId: z.number().min(1),
+  args: z.string().min(1).array(),
 });
 
 type SolverEvent = z.infer<typeof SolverEvent>;
@@ -41,6 +42,7 @@ export const handler: Handler = async (event, _context) => {
     problemId: e.problemId,
     tmpDir: "/tmp",
     solverPath: path.join("target", "release", "cli"),
+    args: e.args,
   });
 };
 
@@ -48,7 +50,7 @@ type Params = {
   problemId: number;
   tmpDir: string;
   solverPath: string;
-  // args: string[];
+  args: string[];
 };
 
 export async function main(params: Params) {
@@ -70,7 +72,10 @@ export async function main(params: Params) {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(problemPath, await res.text(), { encoding: "utf-8" });
 
-    const command = `${solverPath} -a GridGreed,Annealing -i ${problemPath} -o ${outDir} --annealing-seconds 60`;
+    const args = params.args.join(" ");
+    const command = `${solverPath} -i ${problemPath} -o ${outDir} ${args}`;
+    console.log(`run: ${command}`);
+
     const { stdout, stderr } = await exec(command);
 
     const contents = await fs.readFile(path.join(outDir, `${problemId}.json`), {

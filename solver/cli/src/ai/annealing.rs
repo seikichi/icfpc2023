@@ -23,6 +23,8 @@ impl ChainedAI for AnnealingAI {
         let mut current_score = score::calculate(input, &solution).unwrap();
         let start_at = Instant::now();
 
+        let mut score_calc = score::DifferentialCalculator::new(input, &solution);
+
         let mut best_solution = solution.clone();
         let mut best_score = current_score;
 
@@ -48,11 +50,12 @@ impl ChainedAI for AnnealingAI {
             // 後でロールバックできるように解を保存しておく
             // TODO: もっと効率よく保持できるかも
             let old_solution = solution.clone();
+            let old_score_calc = score_calc.clone();
 
             // move to neighbor
             // let n_methods = 2;
             let method_r = rng.gen::<u32>() % 10;
-            match method_r {
+            let new_score = match method_r {
                 0..=3 => {
                     // 0. swap する
                     let mut k1 = rng.gen::<usize>() % musicians.len();
@@ -64,7 +67,9 @@ impl ChainedAI for AnnealingAI {
                     if musicians[k1].instrument == musicians[k2].instrument {
                         continue;
                     }
+                    let new_score = score_calc.swap(input, &solution, k1, k2);
                     solution.placements.swap(k1, k2);
+                    new_score
                 }
                 4..=10 => {
                     // 1. 適当な musician を少し動かす
@@ -81,42 +86,44 @@ impl ChainedAI for AnnealingAI {
                     p.y = p.y.max(stage_pos.y + 10.0);
                     p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
                     p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
+                    let new_score = score_calc.move_one(input, &solution, k, p);
                     solution.placements[k] = p;
+                    new_score
                 }
                 _ => {
                     panic!("no such method: {method_r}")
                 }
-            }
+            };
 
-            let new_score = score::calculate(input, &solution);
             if iter % 100 == 0 {
                 info!("new_score = {:?}", new_score);
             }
 
             // 新しい解を受理するか決める
             let accept = {
-                match new_score {
-                    None => false, // 解が不正な場合は受理しない
-                    Some(new_score) => {
-                        // スコアが改善するなら必ず受理する
-                        if new_score > current_score {
-                            true
-                        } else {
-                            // そうでない場合はある確率で受理する
-                            // new_score <= current_score
-                            let delta = current_score - new_score;
-                            let accept_prob = (-delta as f64 / temperature).exp();
-                            rng.gen::<f64>() < accept_prob
-                        }
-                    }
+                // 解が不正な場合は受理しない
+                if score::validate_solution(input, &solution).is_err() {
+                    false
+                }
+                // スコアが改善するなら必ず受理する
+                else if new_score > current_score {
+                    true
+                }
+                // そうでない場合はある確率で受理する
+                else {
+                    // new_score <= current_score
+                    let delta = current_score - new_score;
+                    let accept_prob = (-delta as f64 / temperature).exp();
+                    rng.gen::<f64>() < accept_prob
                 }
             };
             if accept {
                 // accept candidate
-                current_score = new_score.unwrap();
+                current_score = new_score;
             } else {
                 // reject candidate
                 solution = old_solution;
+                score_calc = old_score_calc;
             }
 
             if current_score > best_score {
