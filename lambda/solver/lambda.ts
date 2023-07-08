@@ -144,6 +144,21 @@ export async function main(params: Params) {
     );
 
     await prisma.solution.create({ data: record });
+    if (challengeId) {
+      await prisma.challenge.update({
+        where: {
+          id: challengeId,
+        },
+        data: {
+          solved: {
+            increment: 1,
+          },
+          score: {
+            increment: output.score,
+          },
+        },
+      });
+    }
   } catch (e) {
     console.error(e);
 
@@ -159,5 +174,18 @@ export async function main(params: Params) {
     };
     console.error(record);
     await prisma.failure.create({ data: record });
+
+    if (challengeId) {
+      await prisma.challenge.update({
+        where: {
+          id: challengeId,
+        },
+        data: {
+          failed: {
+            increment: 1,
+          },
+        },
+      });
+    }
   }
 }
