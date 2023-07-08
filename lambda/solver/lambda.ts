@@ -23,6 +23,7 @@ const s3 = new S3Client({ region: "ap-northeast-1" });
 const SolverEvent = z.object({
   problemId: z.number().min(1),
   args: z.string(),
+  challengeId: z.number().nullable(),
 });
 
 type SolverEvent = z.infer<typeof SolverEvent>;
@@ -48,6 +49,7 @@ export const handler: Handler = async (event, _context) => {
     tmpDir: "/tmp",
     solverPath: path.join("target", "release", "cli"),
     args: e.args,
+    challengeId: e.challengeId,
   });
 };
 
@@ -56,13 +58,14 @@ type Params = {
   tmpDir: string;
   solverPath: string;
   args: string;
+  challengeId: number | null;
 };
 
 export async function main(params: Params) {
   const start = performance.now();
   const env = Env.parse(process.env);
   console.log({ commitId: env.COMMIT_ID });
-  const { problemId, tmpDir, solverPath, args } = params;
+  const { problemId, tmpDir, solverPath, args, challengeId } = params;
 
   // NOTE: need to save /tmp (Lambda)
   try {
@@ -89,6 +92,7 @@ export async function main(params: Params) {
     const submission = { problem_id: problemId, contents };
 
     // POST 失敗するかもしれないので...
+    let submissionId: string | null = null;
     try {
       const result = await fetch("https://api.icfpcontest.com/submission", {
         method: "POST",
@@ -98,8 +102,13 @@ export async function main(params: Params) {
         },
         body: JSON.stringify(submission),
       });
+      if (result.ok) {
+        submissionId = await result.text();
+      }
       if (!result.ok) {
-        console.log(await result.text());
+        // TODO: FIXME
+        const text = await result.text();
+        console.log(text.slice(0, 256));
       }
     } catch (e) {
       console.error(e);
@@ -115,6 +124,8 @@ export async function main(params: Params) {
     const elapsedSec = Math.ceil((performance.now() - start) / 1000);
     const bucketKey = uuidv4();
     const record = {
+      challengeId,
+      submissionId,
       problemId,
       score: output.score,
       commitId: env.COMMIT_ID,
