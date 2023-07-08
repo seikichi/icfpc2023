@@ -70,7 +70,7 @@ export async function main(params: Params) {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(problemPath, await res.text(), { encoding: "utf-8" });
 
-    const command = `${solverPath} -a GridGreed,Annealing -i ${problemPath} -o ${outDir} --annealing-seconds 60`;
+    const command = `${solverPath} -a GridGreed,Annealing -i ${problemPath} -o ${outDir} --annealing-seconds 300`;
     const { stdout, stderr } = await exec(command);
 
     const contents = await fs.readFile(path.join(outDir, `${problemId}.json`), {
