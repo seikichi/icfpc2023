@@ -56,6 +56,7 @@ fn parse_ai_string(
             "Annealing" => Box::new(ai::AnnealingAI {
                 time_limit: Duration::from_secs(opt.annealing_seconds),
             }),
+            "GreedMove" => Box::new(ai::GreedMoveAI {}),
             x => bail!("'{x}' is not a ChainedAI"),
         };
         chained_ais.push(chained_ai);
