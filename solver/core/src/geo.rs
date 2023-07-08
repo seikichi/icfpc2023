@@ -7,6 +7,7 @@ pub enum Intersection {
     Hit,
 }
 
+#[allow(dead_code)]
 pub fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) -> Intersection {
     p1 -= center;
     p2 -= center;
@@ -88,6 +89,12 @@ fn triangle_area(a: Vec2, b: Vec2, c: Vec2) -> f32 {
 }
 
 pub fn segment_circle_intersection(p: Vec2, q: Vec2, r: f32, o: Vec2) -> Intersection {
+    // 高速化のために、まず矩形として比較してみる
+    let vr = Vec2::new(r + 1e-5, r + 1e-5);
+    if !intersects_rectangle(p, q, o - vr, o + vr) {
+        return Intersection::None;
+    }
+
     // 円の中心から線分上の点への距離の最大値
     let max_dist = o.distance(p).max(o.distance(q));
     // 円の中心から線分上の点への距離の最小値
@@ -98,11 +105,90 @@ pub fn segment_circle_intersection(p: Vec2, q: Vec2, r: f32, o: Vec2) -> Interse
         // そうでない場合
         o.distance(p).min(o.distance(q))
     };
-    if (min_dist - r).abs() < 1e-8 && max_dist >= r {
+    if (min_dist - r).abs() < 1e-5 && max_dist >= r {
         Intersection::Tagent
     } else if min_dist <= r && max_dist >= r {
         Intersection::Hit
     } else {
         Intersection::None
     }
+}
+
+// 一次元の線分 [a1, a2] と [b1, b2] が共通部分を持つとき true を返す。
+fn intersects_segment_1d(a1: f32, a2: f32, b1: f32, b2: f32) -> bool {
+    let (al, ar) = if a1 < a2 { (a1, a2) } else { (a2, a1) };
+    let (bl, br) = if b1 < b2 { (b1, b2) } else { (b2, b1) };
+    al <= br && bl <= ar
+}
+
+// a1 と a2 を対角線とする矩形と b1 と b2 を対角線とする矩形が共通部分を持つとき true を返す。
+fn intersects_rectangle(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2) -> bool {
+    intersects_segment_1d(a1.x, a2.x, b1.x, b2.x) && intersects_segment_1d(a1.y, a2.y, b1.y, b2.y)
+}
+
+#[test]
+fn test_intersect_rectangle() {
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0)
+        ),
+        true
+    );
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(0.5, 0.0),
+            Vec2::new(1.5, 1.0),
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0)
+        ),
+        true
+    );
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(2.0, 0.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0)
+        ),
+        true
+    );
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(2.1, 0.0),
+            Vec2::new(1.1, 1.0),
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0)
+        ),
+        false
+    );
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(0.0, 0.5),
+            Vec2::new(1.0, 1.5)
+        ),
+        true
+    );
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(0.0, 1.0),
+            Vec2::new(1.0, 2.0)
+        ),
+        true
+    );
+    assert_eq!(
+        intersects_rectangle(
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(0.0, 2.1),
+            Vec2::new(1.0, 1.1)
+        ),
+        false
+    );
 }
