@@ -1,11 +1,12 @@
+use std::f32::consts::PI;
 use std::time::{Duration, Instant};
+use std::usize;
 
 use crate::ai::ChainedAI;
 use crate::input::Input;
 use crate::score;
 use crate::Solution;
-use glam::IVec2;
-use log::debug;
+use glam::Vec2;
 use log::info;
 use rand::prelude::*;
 
@@ -15,9 +16,11 @@ pub struct AnnealingAI {
 
 impl ChainedAI for AnnealingAI {
     fn solve(&mut self, input: &Input, initial_solution: &Solution) -> Solution {
+        let musicians = &input.musicians;
+
         let mut solution = initial_solution.clone();
         let mut rng = SmallRng::from_entropy();
-        let mut current_score = score::calculate(input, &solution);
+        let mut current_score = score::calculate(input, &solution).unwrap();
         let start_at = Instant::now();
 
         let mut best_solution = solution.clone();
@@ -47,27 +50,57 @@ impl ChainedAI for AnnealingAI {
             let old_solution = solution.clone();
 
             // move to neighbor
-            // TODO: solution を適当な近傍に変更する
-            panic!("not implemented");
+            let n_methods = 2;
+            let method = rng.gen::<u32>() % n_methods;
+            match method {
+                0 => {
+                    // 0. swap する
+                    let mut k1 = rng.gen::<usize>() % musicians.len();
+                    let mut k2 = rng.gen::<usize>() % musicians.len();
+                    while k1 == k2 {
+                        k1 = rng.gen::<usize>() % musicians.len();
+                        k2 = rng.gen::<usize>() % musicians.len();
+                    }
+                    solution.placements.swap(k1, k2);
+                }
+                1 => {
+                    // 1. 適当な musician を少し動かす
+                    const MAX_DELTA: f32 = 10.0;
+                    let k = rng.gen::<usize>() % musicians.len();
+                    let delta = rng.gen::<f32>() * MAX_DELTA;
+                    let angle = rng.gen::<f32>() * 2.0 * PI;
+                    let v = delta * Vec2::new(angle.cos(), angle.sin());
+                    solution.placements[k] += v;
+                }
+                _ => {
+                    panic!("no such method: {method}")
+                }
+            }
 
-            // TODO: solution が invalid な場合はエラーを返すようにしたほうがいいかも
             let new_score = score::calculate(input, &solution);
-            info!("new_score = {new_score}");
+            info!("new_score = {:?}", new_score);
 
             // 新しい解を受理するか決める
             let accept = {
-                if new_score > current_score {
-                    true
-                } else {
-                    // new_score <= current_score
-                    let delta = current_score - new_score;
-                    let accept_prob = (-delta as f64 / temperature).exp();
-                    rng.gen::<f64>() < accept_prob
+                match new_score {
+                    None => false, // 解が不正な場合は受理しない
+                    Some(new_score) => {
+                        // スコアが改善するなら必ず受理する
+                        if new_score > current_score {
+                            true
+                        } else {
+                            // そうでない場合はある確率で受理する
+                            // new_score <= current_score
+                            let delta = current_score - new_score;
+                            let accept_prob = (-delta as f64 / temperature).exp();
+                            rng.gen::<f64>() < accept_prob
+                        }
+                    }
                 }
             };
             if accept {
                 // accept candidate
-                current_score = new_score;
+                current_score = new_score.unwrap();
             } else {
                 // reject candidate
                 solution = old_solution;

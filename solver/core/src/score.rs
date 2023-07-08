@@ -1,11 +1,12 @@
 use super::*;
 
-pub fn calculate(input: &input::Input, solution: &Solution) -> i64 {
+// スコアを計算する。
+// solution が不正である場合、None を返す。
+pub fn calculate(input: &input::Input, solution: &Solution) -> Option<i64> {
     match validate_solution(input, solution) {
         Ok(()) => {}
-        Err(e) => {
-            eprintln!("ERROR: {e}");
-            return 0;
+        Err(_) => {
+            return None;
         }
     }
 
@@ -15,7 +16,7 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> i64 {
         let score_k = calculate_score_of_a_musician(input, solution, k);
         score += score_k.iter().sum::<i64>();
     }
-    score.max(0)
+    Some(score.max(0))
 }
 
 // k番目の musician に関するスコアを返す。

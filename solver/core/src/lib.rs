@@ -104,7 +104,7 @@ pub fn run() -> anyhow::Result<Output> {
     let loglevel = if opt.quiet { "info" } else { "debug" };
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or(loglevel)).init();
 
-    let (mut head_ai, _chained_ais) = parse_ai_string(&opt.ai, &opt)?;
+    let (mut head_ai, chained_ais) = parse_ai_string(&opt.ai, &opt)?;
 
     if !opt.output_dir.is_dir() {
         bail!("'{}' is not a directory", opt.output_dir.to_string_lossy());
@@ -119,7 +119,20 @@ pub fn run() -> anyhow::Result<Output> {
 
     let input = input::load_from_file(opt.input_path.clone())?;
 
-    let solution = head_ai.solve(&input);
+    let mut solution = head_ai.solve(&input);
+    let mut score_history = vec![];
+    score_history.push(score::calculate(&input, &solution).unwrap());
+
+    for mut chained_ai in chained_ais {
+        solution = chained_ai.solve(&input, &solution);
+        score_history.push(score::calculate(&input, &solution).unwrap());
+    }
+
+    info!("Score History:");
+    for (i, score) in score_history.iter().enumerate() {
+        info!("    {i}: {score}")
+    }
+
     let raw_solution = RawSolution {
         placements: solution
             .placements
