@@ -3,7 +3,7 @@
 import { Room, Solution } from "@/lib/schema";
 import { Card, Title, Flex, Button, Text } from "@tremor/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import wasm, { calculate } from "wasm";
+import wasm, { calculate, calculate_score_of_a_musician } from "wasm";
 
 const MAX_CANVAS_SIZE = 1000;
 
@@ -20,6 +20,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [score, setScore] = useState<number | null>(null);
+  const [musician_scores, setMusiciansScores] = useState<number[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -42,20 +43,55 @@ export default function RoomtComponent(props: RoomtComponentProps) {
     }
     console.log("start calculate");
     (async () => {
+      const room_str = JSON.stringify(room);
+      const solution_str = JSON.stringify({
+        placements: solution.placements.map(({ x, y }) => [x, y]),
+      });
       try {
         await wasm();
-        const score = calculate(
-          JSON.stringify(room),
-          JSON.stringify({
-            placements: solution.placements.map(({ x, y }) => [x, y]),
+        const score = calculate(room_str, solution_str);
+        setScore(Number(score));
+        const musician_scores = room.musicians.map((_, i) => {
+          const score_of_a_musician = calculate_score_of_a_musician(
+            room_str,
+            solution_str,
+            i
+          );
+          return score_of_a_musician.reduce((a, b) => a + Number(b), 0);
+        });
+        console.log(
+          "musician_scores:",
+          solution.placements.map(({ x, y }, i) => {
+            return { x, y, score: musician_scores[i] };
           })
         );
-        setScore(Number(score));
+        setMusiciansScores(musician_scores);
       } catch (e) {
         alert(JSON.stringify(e));
       }
     })();
   }, [room, solution]);
+
+  function mapValueToColor(value: number, min: number, max: number) {
+    let r, g, b;
+    if (value > 0) {
+      // 0から正の範囲で青色の濃度を増やす
+      let ratio = value / max;
+      r = g = 255 * (1 - ratio);
+      b = 255;
+    } else if (value < 0) {
+      // 0から負の範囲で赤色の濃度を増やす
+      let ratio = value / min;
+      r = 255;
+      g = b = 255 * (1 - ratio);
+    } else {
+      // 値が0の場合は白色
+      r = g = b = 255;
+    }
+    return (
+      "rgb(" + Math.round(r) + "," + Math.round(g) + "," + Math.round(b) + ")"
+    );
+  }
 
   useEffect(() => {
     if (canvasRef.current === null || room === null) {
@@ -93,20 +129,30 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       return;
     }
 
-    ctx.fillStyle = "blue";
-    for (const { x, y } of solution.placements) {
+    solution.placements.forEach(({ x, y }, i) => {
+      if (musician_scores === null) {
+        ctx.fillStyle = "white";
+      } else {
+        const color = mapValueToColor(
+          musician_scores[i],
+          Math.min(...musician_scores),
+          Math.max(...musician_scores)
+        );
+        ctx.fillStyle = color;
+      }
       const circle = new Path2D();
       circle.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.fill(circle);
-    }
-  }, [canvasRef, room, solution]);
+    });
+  }, [canvasRef, room, solution, musician_scores]);
 
   const clearSolution = useCallback(() => {
     setSolution(null);
     setScore(null);
+    setMusiciansScores(null);
   }, [setSolution]);
 
-  const selectSolutin = useCallback(() => {
+  const selectSolution = useCallback(() => {
     if (inputRef.current === null) {
       return;
     }
@@ -156,7 +202,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
           style={{ display: "none" }}
         />
 
-        <Button size="xs" variant="primary" onClick={selectSolutin}>
+        <Button size="xs" variant="primary" onClick={selectSolution}>
           Select Solution
         </Button>
       </Flex>
