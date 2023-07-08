@@ -5,6 +5,7 @@ import * as path from "path";
 import * as child_process from "child_process";
 import { Handler } from "aws-lambda";
 import * as fs from "fs/promises";
+import { z } from "zod";
 
 // https://stackoverflow.com/questions/30763496
 const exec = promisify(child_process.exec);
@@ -21,9 +22,23 @@ const prisma = new PrismaClient();
 // S3 用意
 // DB 保存
 
+const SolverEvent = z.object({
+  problemId: z.number().min(1),
+});
+
+type SolverEvent = z.infer<typeof SolverEvent>;
+
+const Env = z.object({
+  DATABASE_URL: z.string().startsWith("mysql://"),
+  COMMIT_ID: z.string().min(1),
+  API_TOKEN: z.string().startsWith("eyJ"),
+});
+
 export const handler: Handler = async (event, _context) => {
+  const e = SolverEvent.parse(event);
+
   return main({
-    problemId: event.problemId,
+    problemId: e.problemId,
     tmpDir: "/tmp",
     solverPath: path.join("target", "release", "cli"),
   });
@@ -37,6 +52,8 @@ type Params = {
 };
 
 export async function main(params: Params) {
+  const env = Env.parse(process.env);
+  console.log({ commitId: env.COMMIT_ID });
   const { problemId, tmpDir, solverPath } = params;
 
   // NOTE: need to save /tmp (Lambda)
@@ -56,10 +73,27 @@ export async function main(params: Params) {
     const command = `${solverPath} -a GridGreed -i ${problemPath} -o ${outDir}`;
     const { stdout, stderr } = await exec(command);
 
+    const contents = await fs.readFile(path.join(outDir, `${problemId}.json`), {
+      encoding: "utf-8",
+    });
+    const submission = { problem_id: problemId, contents };
+
+    const result = await fetch("https://api.icfpcontest.com/submission", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${env.API_TOKEN}`,
+      },
+      body: JSON.stringify(submission),
+    });
+
     console.log("stdout:");
     console.log(stdout);
     console.log("stderr:");
     console.log(stderr);
+
+    console.log("result");
+    console.log(await result.text());
   } catch (e) {
     console.error(e);
   }

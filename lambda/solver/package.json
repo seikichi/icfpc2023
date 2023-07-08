@@ -14,6 +14,7 @@
     "@prisma/client": "^4.16.2",
     "@types/aws-lambda": "^8.10.119",
     "prisma": "^4.16.2",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "zod": "^3.21.4"
   }
 }

@@ -1,16 +1,19 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as sns from "aws-cdk-lib/aws-sns";
-import * as sqs from "aws-cdk-lib/aws-sqs";
-import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
-import { SqsSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
+// import * as sns from "aws-cdk-lib/aws-sns";
+// import * as sqs from "aws-cdk-lib/aws-sqs";
+// import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+// import { SqsSubscription } from "aws-cdk-lib/aws-sns-subscriptions";
 
 import "dotenv/config";
 import { z } from "zod";
 
+import * as child_process from "child_process";
+
 const Env = z.object({
   DATABASE_URL: z.string().startsWith("mysql://"),
+  API_TOKEN: z.string().startsWith("eyJ"),
 });
 
 const env = Env.parse(process.env);
@@ -19,14 +22,22 @@ export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // get commit hash
+    const commitHash = child_process
+      .execSync("git rev-parse --short HEAD")
+      .toString()
+      .trim();
+
     new lambda.DockerImageFunction(this, "Solver", {
       code: lambda.DockerImageCode.fromImageAsset("../", {
         file: "lambda/solver/Dockerfile",
       }),
       timeout: cdk.Duration.minutes(15),
-      memorySize: 1024,
+      memorySize: 2048,
       environment: {
         DATABASE_URL: env.DATABASE_URL,
+        COMMIT_ID: commitHash,
+        API_TOKEN: env.API_TOKEN,
       },
     });
 
