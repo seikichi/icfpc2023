@@ -6,6 +6,7 @@ import * as child_process from "child_process";
 import { Handler } from "aws-lambda";
 import * as fs from "fs/promises";
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
 // https://stackoverflow.com/questions/30763496
 const exec = promisify(child_process.exec);
@@ -24,10 +25,16 @@ const prisma = new PrismaClient();
 
 const SolverEvent = z.object({
   problemId: z.number().min(1),
-  args: z.string().min(1).array(),
+  args: z.string(),
 });
 
 type SolverEvent = z.infer<typeof SolverEvent>;
+
+const SolverOutput = z.object({
+  score: z.number().int(),
+});
+
+type SolverOutput = z.infer<typeof SolverOutput>;
 
 const Env = z.object({
   DATABASE_URL: z.string().startsWith("mysql://"),
@@ -50,13 +57,14 @@ type Params = {
   problemId: number;
   tmpDir: string;
   solverPath: string;
-  args: string[];
+  args: string;
 };
 
 export async function main(params: Params) {
+  const start = performance.now();
   const env = Env.parse(process.env);
   console.log({ commitId: env.COMMIT_ID });
-  const { problemId, tmpDir, solverPath } = params;
+  const { problemId, tmpDir, solverPath, args } = params;
 
   // NOTE: need to save /tmp (Lambda)
   try {
@@ -72,8 +80,7 @@ export async function main(params: Params) {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(problemPath, await res.text(), { encoding: "utf-8" });
 
-    const args = params.args.join(" ");
-    const command = `${solverPath} -i ${problemPath} -o ${outDir} ${args}`;
+    const command = `${solverPath} -i ${problemPath} -o ${outDir} -Q ${args}`;
     console.log(`run: ${command}`);
 
     const { stdout, stderr } = await exec(command);
@@ -91,15 +98,48 @@ export async function main(params: Params) {
       },
       body: JSON.stringify(submission),
     });
+    if (!result.ok) {
+      throw await result.text();
+    }
 
     console.log("stdout:");
     console.log(stdout);
     console.log("stderr:");
     console.log(stderr);
 
-    console.log("result");
-    console.log(await result.text());
+    const output = SolverOutput.parse(JSON.parse(stdout));
+
+    const elapsedSec = Math.ceil((performance.now() - start) / 1000);
+    const bucketKey = uuidv4();
+    const record = {
+      problemId,
+      score: output.score,
+      commitId: env.COMMIT_ID,
+      args,
+      bucketKey,
+      elapsedSec,
+    };
+    console.log(record);
+
+    // TODO: update file to s3
+    // TODO: try to download the file
+
+    // await prisma.solution.create({
+    //   data: record,
+    // });
+    // https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/example_s3_Scenario_PresignedUrl_section.html
   } catch (e) {
+    // MEMO: Is this correct?
+    const elapsedSec = Math.ceil((performance.now() - start) / 1000);
+    const error = JSON.stringify(e).slice(512);
+    const record = {
+      error,
+      problemId,
+      commitId: env.COMMIT_ID,
+      args,
+      elapsedSec,
+    };
+    console.error(record);
     console.error(e);
   }
 }

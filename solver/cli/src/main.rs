@@ -42,6 +42,12 @@ struct Opt {
     annealing_seconds: u64,
 }
 
+// 標準出力に JSON 形式で出力し、Lambda の JS が DB に書き込む
+#[derive(Debug, serde::Serialize)]
+struct Output {
+    score: i64,
+}
+
 fn parse_ai_string(
     ai_str: &str,
     opt: &Opt,
@@ -114,5 +120,10 @@ pub fn run() -> anyhow::Result<()> {
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
     info!("output JSON to: {}", output_filename.to_string_lossy());
     output::save_to_file(output_filename, &solution)?;
+
+    let score = score_history.last().unwrap();
+    let output = Output { score: *score };
+    println!("{}", serde_json::to_string(&output)?);
+
     Ok(())
 }

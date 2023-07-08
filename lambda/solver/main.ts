@@ -7,4 +7,5 @@ main({
   problemId,
   tmpDir: "tmp",
   solverPath: path.join("..", "..", "solver", "target", "release", "cli"),
+  args: "-a GridGreed",
 });
