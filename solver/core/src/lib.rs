@@ -8,7 +8,7 @@ use crate::ai::{ChainedAI, HeadAI};
 use anyhow::bail;
 use glam::Vec2;
 use log::info;
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, time::Duration};
 use structopt::StructOpt;
 
 pub type Instrument = i32;
@@ -55,6 +55,9 @@ struct Opt {
 
     #[structopt(short = "q", help = "disable debug log")]
     quiet: bool,
+
+    #[structopt(long = "annealing-seconds", default_value = "10")]
+    annealing_seconds: u64,
 }
 
 fn parse_ai_string(
@@ -67,26 +70,15 @@ fn parse_ai_string(
         x => bail!("'{x}' is not a HeadAI"),
     };
     let mut chained_ais = vec![];
-    // for name in &parts[1..] {
-    //     let chained_ai: Box<dyn ai::ChainedAI> = match *name {
-    //         "Refine" => Box::new(ai::RefineAi {
-    //             n_iters: opt.refine_iters,
-    //             algorithm: match opt.refine_algorithm.as_str() {
-    //                 "hill" | "hillclimbing" => ai::OptimizeAlgorithm::HillClimbing,
-    //                 "annealing" => ai::OptimizeAlgorithm::Annealing,
-    //                 x => bail!("'{x}' is not OptimizeAlgorithm"),
-    //             },
-    //             initial_temperature: opt.refine_initial_temperature,
-    //             dp_divide_max: opt.refine_dp_divide_max,
-    //             show_intermediates: opt.refine_show_intermediates,
-    //         }),
-    //         "Annealing" => Box::new(ai::AnnealingAI {
-    //             time_limit: Duration::from_secs(opt.annealing_seconds),
-    //         }),
-    //         x => bail!("'{x}' is not a ChainedAI"),
-    //     };
-    //     chained_ais.push(chained_ai);
-    // }
+    for name in &parts[1..] {
+        let chained_ai: Box<dyn ai::ChainedAI> = match *name {
+            "Annealing" => Box::new(ai::AnnealingAI {
+                time_limit: Duration::from_secs(opt.annealing_seconds),
+            }),
+            x => bail!("'{x}' is not a ChainedAI"),
+        };
+        chained_ais.push(chained_ai);
+    }
     Ok((head_ai, chained_ais))
 }
 
