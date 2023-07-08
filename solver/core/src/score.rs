@@ -216,6 +216,9 @@ fn test_line_circle_intersection() {
 struct DifferentialCalculator {
     // n_occlusion[k][i]: k番目の musician と i番目の客の間が何人の musician によって遮蔽されているか
     n_occlusion: Vec<Vec<u32>>,
+
+    // n_tangent[k][i]: k番目の musician と i番目の客を結ぶ線分が何人の musician の当たり判定に接するか
+    n_tangent: Vec<Vec<u32>>,
 }
 
 impl DifferentialCalculator {
@@ -225,6 +228,7 @@ impl DifferentialCalculator {
         let n_musicians = input.musicians.len();
         let mut dc = Self {
             n_occlusion: vec![vec![0; n_attendees]; n_musicians],
+            n_tangent: vec![vec![0; n_attendees]; n_musicians],
         };
         dc.initialize(input, solution);
         dc
@@ -237,7 +241,7 @@ impl DifferentialCalculator {
         let attendees = &input.attendees;
         let placements = &solution.placements;
 
-        // n_occlusion を埋める
+        // n_occlusion と n_tangent を埋める
         for k in 0..musician.len() {
             let p2 = placements[k];
             for i in 0..attendees.len() {
@@ -247,10 +251,15 @@ impl DifferentialCalculator {
                         continue;
                     }
                     let intersection = line_circle_intersection(p1, p2, 5.0, placements[k_]);
-                    if intersection == Intersection::Hit {
-                        self.n_occlusion[k][i] += 1;
+                    match intersection {
+                        Intersection::Hit => {
+                            self.n_occlusion[k][i] += 1;
+                        }
+                        Intersection::Tagent => {
+                            self.n_tangent[k][i] += 1;
+                        }
+                        Intersection::None => {}
                     }
-                    // TODO: Tangent の扱い
                 }
             }
         }
@@ -267,13 +276,13 @@ impl DifferentialCalculator {
         k: usize,
         new_k_pos: Vec2,
     ) -> i64 {
-        self.update_n_occulusion(input, current_solution, k, new_k_pos);
+        self.update_internal_state(input, current_solution, k, new_k_pos);
         self.calculate_score(input, current_solution, k, new_k_pos)
     }
 
     // 内部状態を k を new_k_pos に移動したあとの状態に更新する。
     // O(MA)
-    fn update_n_occulusion(
+    fn update_internal_state(
         &mut self,
         input: &Input,
         current_solution: &Solution,
@@ -293,9 +302,14 @@ impl DifferentialCalculator {
             for i in 0..attendees.len() {
                 let p2 = attendees[i].pos;
                 let intersection = line_circle_intersection(p1, p2, 5.0, current_k_pos);
-                // TODO: Intersection::Tangent の扱い
-                if intersection == Intersection::Hit {
-                    self.n_occlusion[k_][i] -= 1;
+                match intersection {
+                    Intersection::Hit => {
+                        self.n_occlusion[k_][i] -= 1;
+                    }
+                    Intersection::Tagent => {
+                        self.n_tangent[k_][i] -= 1;
+                    }
+                    Intersection::None => {}
                 }
             }
         }
@@ -309,9 +323,14 @@ impl DifferentialCalculator {
             for i in 0..attendees.len() {
                 let p2 = attendees[i].pos;
                 let intersection = line_circle_intersection(p1, p2, 5.0, new_k_pos);
-                // TODO: Intersection::Tangent の扱い
-                if intersection == Intersection::Hit {
-                    self.n_occlusion[k_][i] += 1;
+                match intersection {
+                    Intersection::Hit => {
+                        self.n_occlusion[k_][i] += 1;
+                    }
+                    Intersection::Tagent => {
+                        self.n_tangent[k_][i] += 1;
+                    }
+                    Intersection::None => {}
                 }
             }
         }
@@ -320,18 +339,25 @@ impl DifferentialCalculator {
         for i in 0..attendees.len() {
             let p2 = attendees[i].pos;
             let mut n_hit = 0;
+            let mut n_tangent = 0;
             for k_ in 0..musician.len() {
                 if k == k_ {
                     continue;
                 }
                 let p3 = current_solution.placements[k_];
                 let intersection = line_circle_intersection(new_k_pos, p2, 5.0, p3);
-                // TODO: Intersection::Tangent の扱い
-                if intersection == Intersection::Hit {
-                    n_hit += 1;
+                match intersection {
+                    Intersection::Hit => {
+                        n_hit += 1;
+                    }
+                    Intersection::Tagent => {
+                        n_tangent += 1;
+                    }
+                    Intersection::None => {}
                 }
             }
             self.n_occlusion[k][i] = n_hit;
+            self.n_tangent[k][i] = n_tangent;
         }
     }
 
@@ -374,12 +400,11 @@ impl DifferentialCalculator {
                 continue;
             }
             let taste = attendees[i].tastes[musicians[k].instrument as usize];
-            // TODO: 接している場合の処理
-            //if intersection == Intersection::Tagent {
-            //    if taste > 0.0 {
-            //        continue;
-            //    }
-            //}
+            if self.n_tangent[k][i] > 0 {
+                if taste > 0.0 {
+                    continue;
+                }
+            }
 
             let diff = attendees[i].pos - k_pos;
             let squared_distance = diff.dot(diff);
