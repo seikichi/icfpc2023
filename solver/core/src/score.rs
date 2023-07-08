@@ -1,3 +1,5 @@
+use crate::input::Input;
+
 use super::*;
 
 // スコアを計算する。
@@ -155,6 +157,25 @@ fn test_calculate() {
 }
 
 #[test]
+fn test_differential_calculator() {
+    let input_path = "../../solver/problems/42.json";
+    let input = input::load_from_file(input_path.clone()).unwrap();
+    let solution_path = "../../solver/test_data/42.json";
+
+    let current_solution = output::load_from_file(solution_path.clone()).unwrap();
+    let current_score = calculate(&input, &current_solution).unwrap();
+
+    let mut dc = DifferentialCalculator::new(&input, &current_solution);
+
+    // 0番目の musician を今と同じ場所に移動させる
+    let pos0 = current_solution.placements[0];
+    let next_score = dc.move_one(&input, &current_solution, current_score, 0, pos0);
+
+    // スコアは変化しないはず
+    assert_eq!(current_score, next_score);
+}
+
+#[test]
 fn test_line_circle_intersection() {
     // hit
     {
@@ -188,5 +209,159 @@ fn test_line_circle_intersection() {
             line_circle_intersection(p1, p2, r, center),
             Intersection::None
         );
+    }
+}
+
+// スコアを差分計算するための struct
+struct DifferentialCalculator {
+    // n_occlusion[k][i]: k番目の musician と i番目の客の間が何人の musician によって遮蔽されているか
+    n_occlusion: Vec<Vec<u32>>,
+}
+
+impl DifferentialCalculator {
+    fn new(input: &Input, solution: &Solution) -> Self {
+        let n_attendees = input.attendees.len();
+        let n_musicians = input.musicians.len();
+        let mut dc = Self {
+            n_occlusion: vec![vec![0; n_attendees]; n_musicians],
+        };
+        dc.initialize(input, solution);
+        dc
+    }
+
+    // O(M^2 A)
+    fn initialize(&mut self, input: &Input, solution: &Solution) {
+        let musician = &input.musicians;
+        let attendees = &input.attendees;
+        let placements = &solution.placements;
+
+        // n_occlusion を埋める
+        for k in 0..musician.len() {
+            let p2 = placements[k];
+            for i in 0..attendees.len() {
+                let p1 = attendees[i].pos;
+                for k_ in 0..musician.len() {
+                    if k == k_ {
+                        continue;
+                    }
+                    let intersection = line_circle_intersection(p1, p2, 5.0, placements[k_]);
+                    if intersection == Intersection::Hit {
+                        self.n_occlusion[k][i] += 1;
+                    }
+                    // TODO: Tangent の扱い
+                }
+            }
+        }
+    }
+
+    // k番目の musician を new_k_pos に移動したあとのスコアを返す。
+    // O(MA)
+    pub fn move_one(
+        &mut self,
+        input: &Input,
+        current_solution: &Solution,
+        current_score: i64,
+        k: usize,
+        new_k_pos: Vec2,
+    ) -> i64 {
+        let current_score_of_k =
+            self.calculate_score_of_a_musician(input, k, current_solution.placements[k]);
+
+        self.update_n_occulusion(input, current_solution, k, new_k_pos);
+
+        let new_score_of_k = self.calculate_score_of_a_musician(input, k, new_k_pos);
+
+        return current_score - current_score_of_k + new_score_of_k;
+    }
+
+    // O(MA)
+    fn update_n_occulusion(
+        &mut self,
+        input: &Input,
+        current_solution: &Solution,
+        k: usize,
+        new_k_pos: Vec2,
+    ) {
+        let musician = &input.musicians;
+        let attendees = &input.attendees;
+
+        // 現在の k によって遮蔽されているペアの遮蔽カウントを1減らす
+        let current_k_pos = current_solution.placements[k];
+        for k_ in 0..musician.len() {
+            if k == k_ {
+                continue;
+            }
+            let p1 = current_solution.placements[k_];
+            for i in 0..attendees.len() {
+                let p2 = attendees[i].pos;
+                let intersection = line_circle_intersection(p1, p2, 5.0, current_k_pos);
+                // TODO: Intersection::Tangent の扱い
+                if intersection == Intersection::Hit {
+                    self.n_occlusion[k_][i] -= 1;
+                }
+            }
+        }
+
+        // 新しい k によって遮蔽されるペアの遮蔽カウントを1増やす
+        for k_ in 0..musician.len() {
+            if k == k_ {
+                continue;
+            }
+            let p1 = current_solution.placements[k_];
+            for i in 0..attendees.len() {
+                let p2 = attendees[i].pos;
+                let intersection = line_circle_intersection(p1, p2, 5.0, new_k_pos);
+                // TODO: Intersection::Tangent の扱い
+                if intersection == Intersection::Hit {
+                    self.n_occlusion[k_][i] += 1;
+                }
+            }
+        }
+
+        // n_occulusion[k][*] を計算しなおす
+        for i in 0..attendees.len() {
+            let p2 = attendees[i].pos;
+            let mut n_hit = 0;
+            for k_ in 0..musician.len() {
+                if k == k_ {
+                    continue;
+                }
+                let p3 = current_solution.placements[k_];
+                let intersection = line_circle_intersection(new_k_pos, p2, 5.0, p3);
+                // TODO: Intersection::Tangent の扱い
+                if intersection == Intersection::Hit {
+                    n_hit += 1;
+                }
+            }
+            self.n_occlusion[k][i] = n_hit;
+        }
+    }
+
+    // k番目の musician に関するスコアを返す。
+    // O(A)
+    fn calculate_score_of_a_musician(&self, input: &input::Input, k: usize, k_pos: Vec2) -> i64 {
+        let attendees = &input.attendees;
+        let musicians = &input.musicians;
+
+        let mut score = 0;
+        for i in 0..attendees.len() {
+            if self.n_occlusion[k][i] > 0 {
+                // 遮蔽されている
+                continue;
+            }
+            let taste = attendees[i].tastes[musicians[k].instrument as usize];
+            // TODO: 接している場合の処理
+            //if intersection == Intersection::Tagent {
+            //    if taste > 0.0 {
+            //        continue;
+            //    }
+            //}
+
+            let diff = attendees[i].pos - k_pos;
+            let squared_distance = diff.dot(diff);
+            let s = (1_000_000.0 * taste / squared_distance).ceil() as i64;
+            score += s;
+        }
+        score
     }
 }
