@@ -1,6 +1,7 @@
 use glam::Vec2;
 
 use crate::{input, Solution};
+use core::geo::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -47,11 +48,37 @@ impl HeadAI for GridGreedAI {
             for i in 0..candidates.len() {
                 let mut musicians_scores = vec![0; musicians.len()];
                 for j in 0..attendees.len() {
+                    let mut hit = false;
+                    let mut tangent = false;
+                    for pillar in input.pillars.iter() {
+                        let intersection = core::geo::segment_circle_intersection(
+                            candidates[i],
+                            attendees[j].pos,
+                            pillar.radius,
+                            pillar.center,
+                        );
+                        match intersection {
+                            Intersection::None => {}
+                            Intersection::Hit => {
+                                hit = true;
+                                break;
+                            }
+                            Intersection::Tagent => {
+                                tangent = true;
+                            }
+                        }
+                    }
+                    if hit {
+                        continue;
+                    }
                     let diff = attendees[j].pos - candidates[i];
                     let squared_distance = diff.dot(diff);
                     let s = 1_000_000.0 / squared_distance;
                     for k in 0..musicians.len() {
                         let taste = attendees[j].tastes[musicians[k].instrument as usize];
+                        if taste > 0.0 && tangent {
+                            continue;
+                        }
                         musicians_scores[k] += (taste * s).ceil() as i64;
                     }
                 }

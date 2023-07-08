@@ -1,4 +1,4 @@
-mod geo;
+pub mod geo;
 pub mod input;
 pub mod output;
 pub mod score;
