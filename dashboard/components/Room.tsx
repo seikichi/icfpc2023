@@ -1,7 +1,7 @@
 "use client";
 
 import { Room, Solution } from "@/lib/schema";
-import { Card, Title, Flex, Button } from "@tremor/react";
+import { Card, Title, Flex, Button, Text } from "@tremor/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import wasm, { calculate } from "wasm";
 
@@ -18,6 +18,8 @@ export default function RoomtComponent(props: RoomtComponentProps) {
   const [solution, setSolution] = useState<Solution | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [score, setScore] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -48,9 +50,9 @@ export default function RoomtComponent(props: RoomtComponentProps) {
             placements: solution.placements.map(({ x, y }) => [x, y]),
           })
         );
-        console.log(score);
+        setScore(Number(score));
       } catch (e) {
-        console.error(e);
+        alert(JSON.stringify(e));
       }
     })();
   }, [room, solution]);
@@ -101,6 +103,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
 
   const clearSolution = useCallback(() => {
     setSolution(null);
+    setScore(null);
   }, [setSolution]);
 
   const selectSolutin = useCallback(() => {
@@ -119,6 +122,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
           const text = e.target!.result as string;
           const solution = Solution.parse(JSON.parse(text));
           setSolution(solution);
+          setScore(null);
           console.log(solution);
         } catch (e) {
           alert(JSON.stringify(e));
@@ -132,6 +136,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
   return (
     <Card className="mt-8">
       <Title>Problem: {problemId}</Title>
+      {score && <Text>Score: {score}</Text>}
 
       <canvas
         width={MAX_CANVAS_SIZE}
