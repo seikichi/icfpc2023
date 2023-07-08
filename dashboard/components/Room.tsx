@@ -126,6 +126,16 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       ctx.fill(circle);
     }
 
+    ctx.fillStyle = "black";
+    if (room.pillars) {
+      for (const { center, radius } of room.pillars) {
+        const [x, y] = center;
+        const circle = new Path2D();
+        circle.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fill(circle);
+      }
+    }
+
     if (solution === null) {
       return;
     }

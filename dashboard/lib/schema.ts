@@ -27,6 +27,10 @@ export const Room = z.object({
     })
     .array()
     .min(1),
+  pillars: z.object({
+    center: z.tuple([z.number().min(0), z.number().min(0)]),
+    radius: z.number().min(0),
+  }).array().min(0).optional(),
 });
 
 export type Room = z.infer<typeof Room>;
