@@ -30,8 +30,7 @@ impl ChainedAI for GreedMoveAI {
                     p.y = p.y.max(stage_pos.y + 10.0);
                     p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
                     p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
-                    let new_score = score_calc.move_one(input, &solution, k, p);
-                    solution.placements[k] = p;
+                    let new_score = score_calc.move_one(input, &mut solution, k, p);
                     if new_score > prev_score && validate_solution(input, &solution).is_ok() {
                         prev_score = new_score;
                     } else {

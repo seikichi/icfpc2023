@@ -31,6 +31,7 @@ pub fn calculate_score_of_a_musician(
 ) -> Vec<i64> {
     let attendees = &input.attendees;
     let musicians = &input.musicians;
+    let together_factor = calculate_togegher_factor_of_a_musician(input, solution, k);
 
     let mut scores = vec![0; attendees.len()];
     for i in 0..attendees.len() {
@@ -48,7 +49,7 @@ pub fn calculate_score_of_a_musician(
 
         let diff = attendees[i].pos - solution.placements[k];
         let squared_distance = diff.dot(diff);
-        let s = (1_000_000.0 * taste / squared_distance).ceil() as i64;
+        let s = (1_000_000.0 * taste / squared_distance * together_factor).ceil() as i64;
         scores[i] = s;
     }
     scores
@@ -125,6 +126,28 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
     }
 }
 
+fn calculate_togegher_factor_of_a_musician(
+    input: &input::Input,
+    solution: &Solution,
+    k: usize,
+) -> f32 {
+    if input.version < 2 {
+        return 1.0;
+    }
+    let placements = &solution.placements;
+    let p = placements[k];
+    let mut factor = 1.0;
+    for k_ in 0..placements.len() {
+        if k == k_ || input.musicians[k].instrument != input.musicians[k_].instrument {
+            continue;
+        }
+        let p_ = placements[k_];
+        let diff = p - p_;
+        factor += 1.0 / diff.length();
+    }
+    factor
+}
+
 #[test]
 fn test_calculate() {
     let input_path = "../../solver/problems/42.json";
@@ -149,7 +172,7 @@ fn test_differential_calculator() {
 
     // 0番目の musician を今と同じ場所に移動させる
     let pos0 = current_solution.placements[0];
-    let next_score = dc.move_one(&input, &current_solution, 0, pos0);
+    let next_score = dc.move_one(&input, &mut current_solution, 0, pos0);
 
     // スコアは変化しないはず
     assert_eq!(current_score, next_score);
@@ -159,10 +182,8 @@ fn test_differential_calculator() {
         let prev_pos = current_solution.placements[k];
         let pos = current_solution.placements[k]
             + Vec2::new(27.3 * (k % 11) as f32, 11.1 * (k % 7) as f32);
-        dc.move_one(&input, &current_solution, k, pos);
-        current_solution.placements[k] = pos;
-        let next_score = dc.move_one(&input, &current_solution, k, prev_pos);
-        current_solution.placements[k] = prev_pos;
+        dc.move_one(&input, &mut current_solution, k, pos);
+        let next_score = dc.move_one(&input, &mut current_solution, k, prev_pos);
         // スコアは変化しないはず
         assert_eq!(current_score, next_score);
     }
@@ -206,8 +227,7 @@ fn test_differential_calculator2() {
     assert!(dc.n_tangent[1][0] == 0);
     assert!(dc.n_tangent[1][1] == 0);
 
-    let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 30.0));
-    current_solution.placements[0] = Vec2::new(40.0, 30.0);
+    let score2 = dc.move_one(&input, &mut current_solution, 0, Vec2::new(40.0, 30.0));
     assert!(dc.n_occlusion[0][0] == 0);
     assert!(dc.n_occlusion[0][1] == 0);
     assert!(dc.n_occlusion[1][0] == 0);
@@ -219,8 +239,7 @@ fn test_differential_calculator2() {
     let score1 = calculate(&input, &current_solution).unwrap();
     assert!(score1 == score2);
 
-    let score2 = dc.move_one(&input, &current_solution, 1, Vec2::new(60.0, 30.0));
-    current_solution.placements[1] = Vec2::new(60.0, 30.0);
+    let score2 = dc.move_one(&input, &mut current_solution, 1, Vec2::new(60.0, 30.0));
     assert!(dc.n_occlusion[0][0] == 0);
     assert!(dc.n_occlusion[0][1] == 0);
     assert!(dc.n_occlusion[1][0] == 0);
@@ -232,8 +251,7 @@ fn test_differential_calculator2() {
     let score1 = calculate(&input, &current_solution).unwrap();
     assert!(score1 == score2);
 
-    let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 25.0));
-    current_solution.placements[0] = Vec2::new(40.0, 25.0);
+    let score2 = dc.move_one(&input, &mut current_solution, 0, Vec2::new(40.0, 25.0));
     assert!(dc.n_occlusion[0][0] == 0);
     assert!(dc.n_occlusion[0][1] == 0);
     assert!(dc.n_occlusion[1][0] == 1);
@@ -307,7 +325,7 @@ impl DifferentialCalculator {
     pub fn move_one(
         &mut self,
         input: &Input,
-        current_solution: &Solution,
+        current_solution: &mut Solution,
         k: usize,
         new_k_pos: Vec2,
     ) -> i64 {
@@ -399,7 +417,7 @@ impl DifferentialCalculator {
     pub fn swap(
         &mut self,
         input: &Input,
-        current_solution: &Solution,
+        current_solution: &mut Solution,
         k1: usize,
         k2: usize,
     ) -> i64 {
@@ -424,7 +442,7 @@ impl DifferentialCalculator {
     fn calculate_score(
         &self,
         input: &Input,
-        current_solution: &Solution,
+        current_solution: &mut Solution,
         k: usize,
         new_k_pos: Vec2,
         k2: Option<usize>,
@@ -432,15 +450,15 @@ impl DifferentialCalculator {
     ) -> i64 {
         let musicians = &input.musicians;
         let mut score = 0;
+        current_solution.placements[k] = new_k_pos;
+        if let Some(k2) = k2 {
+            current_solution.placements[k2] = new_k2_pos.unwrap();
+        }
         for k_ in 0..musicians.len() {
-            let pos = if k_ == k {
-                new_k_pos
-            } else if k2.is_some_and(|k2| k_ == k2) {
-                new_k2_pos.unwrap()
-            } else {
-                current_solution.placements[k_]
-            };
-            score += self.calculate_score_of_a_musician(input, k_, pos);
+            let pos = current_solution.placements[k_];
+            let together_factor =
+                calculate_togegher_factor_of_a_musician(input, current_solution, k);
+            score += self.calculate_score_of_a_musician(input, k_, pos, together_factor);
         }
         score
     }
@@ -449,7 +467,13 @@ impl DifferentialCalculator {
     // このスコアは負の値を取りうる。
     // 内部状態が移動後の状態となっていることが前提である。
     // O(A)
-    fn calculate_score_of_a_musician(&self, input: &Input, k: usize, k_pos: Vec2) -> i64 {
+    fn calculate_score_of_a_musician(
+        &self,
+        input: &Input,
+        k: usize,
+        k_pos: Vec2,
+        together_facotr: f32,
+    ) -> i64 {
         let attendees = &input.attendees;
         let musicians = &input.musicians;
 
@@ -468,7 +492,7 @@ impl DifferentialCalculator {
 
             let diff = attendees[i].pos - k_pos;
             let squared_distance = diff.dot(diff);
-            let s = (1_000_000.0 * taste / squared_distance).ceil() as i64;
+            let s = (1_000_000.0 * taste / squared_distance * together_facotr).ceil() as i64;
             score += s;
         }
         score
