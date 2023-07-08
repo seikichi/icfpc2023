@@ -30,3 +30,15 @@ export const Room = z.object({
 });
 
 export type Room = z.infer<typeof Room>;
+
+export const Solution = z.object({
+  placements: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .array()
+    .min(1),
+});
+
+export type Solution = z.infer<typeof Solution>;

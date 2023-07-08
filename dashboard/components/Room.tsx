@@ -1,15 +1,17 @@
 "use client";
 
-import { Room } from "@/lib/schema";
-import { Card, Title, Text } from "@tremor/react";
-import { useEffect, useRef, useState } from "react";
+import { Room, Solution } from "@/lib/schema";
+import { Card, Title, Flex, Button } from "@tremor/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const MAX_CANVAS_SIZE = 400;
+const MAX_CANVAS_SIZE = 1000;
 
 export default function RoomtComponent() {
   const problemId = 1;
   const [room, setRoom] = useState<Room | null>(null);
-  const ref = useRef<HTMLCanvasElement>(null);
+  const [solution, setSolution] = useState<Solution | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -27,10 +29,10 @@ export default function RoomtComponent() {
   }, [problemId]);
 
   useEffect(() => {
-    if (ref.current === null || room === null) {
+    if (canvasRef.current === null || room === null) {
       return;
     }
-    const canvas = ref.current;
+    const canvas = canvasRef.current;
 
     const ctx = canvas.getContext("2d")!;
 
@@ -57,14 +59,75 @@ export default function RoomtComponent() {
       circle.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.fill(circle);
     }
-  }, [ref, room]);
+
+    if (solution === null) {
+      return;
+    }
+
+    ctx.fillStyle = "blue";
+    for (const { x, y } of solution.placements) {
+      const circle = new Path2D();
+      circle.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill(circle);
+    }
+  }, [canvasRef, room, solution]);
+
+  const clearSolution = useCallback(() => {
+    setSolution(null);
+  }, [setSolution]);
+
+  const selectSolutin = useCallback(() => {
+    if (inputRef.current === null) {
+      return;
+    }
+    inputRef.current.click();
+  }, [inputRef]);
+
+  const onSolutionChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files![0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const text = e.target!.result as string;
+          const solution = Solution.parse(JSON.parse(text));
+          setSolution(solution);
+          console.log(solution);
+        } catch (e) {
+          alert(JSON.stringify(e));
+        }
+      };
+      reader.readAsText(file);
+    },
+    []
+  );
 
   return (
     <Card className="mt-8">
-      <Title>Hello, world</Title>
-      <Text>This is Room!</Text>
+      <Title>Problem: {problemId}</Title>
 
-      <canvas width={MAX_CANVAS_SIZE} height={MAX_CANVAS_SIZE} ref={ref} />
+      <canvas
+        width={MAX_CANVAS_SIZE}
+        height={MAX_CANVAS_SIZE}
+        ref={canvasRef}
+      />
+
+      <Flex justifyContent="end" className="space-x-2 border-t pt-4 mt-8">
+        <Button size="xs" variant="secondary" onClick={clearSolution}>
+          Clear Solution
+        </Button>
+
+        <input
+          type="file"
+          onChange={onSolutionChange}
+          ref={inputRef}
+          style={{ display: "none" }}
+        />
+
+        <Button size="xs" variant="primary" onClick={selectSolutin}>
+          Select Solution
+        </Button>
+      </Flex>
     </Card>
   );
 }
