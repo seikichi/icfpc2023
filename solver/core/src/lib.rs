@@ -25,6 +25,12 @@ pub struct Attendee {
     pub tastes: Vec<f32>,
 }
 
+#[derive(Clone, Debug)]
+pub struct Pillar {
+    pub center: Vec2,
+    pub radius: f32,
+}
+
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Solution {
     pub placements: Vec<Vec2>,
