@@ -22,7 +22,7 @@ const s3 = new S3Client({ region: "ap-northeast-1" });
 
 const SolverEvent = z.object({
   problemId: z.number().min(1),
-  args: z.string(),
+  args: z.string().max(64),
   challengeId: z.number().nullable(),
 });
 
