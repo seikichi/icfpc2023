@@ -32,7 +32,6 @@ pub fn calculate_score_of_a_musician(
     let attendees = &input.attendees;
     let musicians = &input.musicians;
     let together_factor = calculate_togegher_factor_of_a_musician(input, solution, k);
-    let closeness_factor = calculate_closeness_factor(input, solution, k);
 
     let mut scores = vec![0; attendees.len()];
     for i in 0..attendees.len() {
@@ -50,8 +49,7 @@ pub fn calculate_score_of_a_musician(
 
         let diff = attendees[i].pos - solution.placements[k];
         let squared_distance = diff.dot(diff);
-        let s = (1_000_000.0 * taste / squared_distance * closeness_factor * together_factor).ceil()
-            as i64;
+        let s = (1_000_000.0 * taste / squared_distance * together_factor).ceil() as i64;
         scores[i] = s;
     }
     scores
@@ -148,23 +146,6 @@ fn calculate_togegher_factor_of_a_musician(
         factor += 1.0 / diff.length();
     }
     factor
-}
-
-pub fn calculate_closeness_factor(input: &Input, solution: &Solution, k: usize) -> f32 {
-    if input.version < 2 {
-        return 1.0;
-    }
-    let musicians = &input.musicians;
-    let mut factor: f64 = 0.0;
-    let k_pos = solution.placements[k];
-    for k_ in 0..musicians.len() {
-        if k_ == k {
-            continue;
-        }
-        let d = k_pos.distance(solution.placements[k_]);
-        factor += 1.0 / d as f64;
-    }
-    (1.0 + factor) as f32
 }
 
 #[test]
