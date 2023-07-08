@@ -5,9 +5,12 @@ import logger from "../lib/logger";
 import { prisma } from "../lib/db";
 
 (async () => {
-  const count = await prisma.problem.count();
-  logger.info({ message: `# of problems: ${count}` });
-
-  // T.B.D.
-  // await prisma.problem.createMany({})
+  logger.info({ message: "seed problems" });
+  for (let id = 1; id <= 55; id++) {
+    await prisma.problem.upsert({
+      where: { id },
+      create: { id },
+      update: { id },
+    });
+  }
 })();

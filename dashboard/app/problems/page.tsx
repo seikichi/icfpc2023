@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/db";
 import {
   Title,
   Card,
@@ -14,12 +15,10 @@ import Link from "next/link";
 
 // export const dynamic = "force-dynamic";
 
-const NUM_PROBLEMS = 55;
+// const NUM_PROBLEMS = 55;
 
 export default async function Page() {
-  const problems = Array.from(Array(NUM_PROBLEMS).keys()).map((i) => ({
-    id: i + 1,
-  }));
+  const problems = await prisma.problem.findMany();
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">

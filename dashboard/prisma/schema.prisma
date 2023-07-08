@@ -13,6 +13,77 @@ datasource db {
   relationMode = "prisma"
 }
 
+// 現在の最高スコア等保存したい
 model Problem {
+  id Int @id
+
+  // bestScore Int
+  solutions Solution[]
+  failures  Failure[]
+}
+
+// 1つ1つの解
+model Solution {
   id Int @id @default(autoincrement())
+
+  challengeId Int?
+
+  createdAt  DateTime @default(now())
+  problemId  Int
+  score      Int
+  commitId   String   @db.VarChar(40)
+  args       Json
+  elapsedSec Int
+
+  problem   Problem    @relation(fields: [problemId], references: [id])
+  challenge Challenge? @relation(fields: [challengeId], references: [id])
+
+  @@index([problemId, score])
+  @@index([problemId, createdAt])
+  @@index([challengeId])
+}
+
+// 実行失敗
+model Failure {
+  id Int @id @default(autoincrement())
+
+  challengeId Int?
+
+  error String @db.VarChar(512)
+
+  createdAt  DateTime @default(now())
+  problemId  Int
+  commitId   String   @db.VarChar(40)
+  args       Json
+  elapsedSec Int
+
+  problem   Problem    @relation(fields: [problemId], references: [id])
+  challenge Challenge? @relation(fields: [challengeId], references: [id])
+
+  @@index([problemId, createdAt])
+  @@index([challengeId])
+}
+
+// 複数の Solution をまとめた概念
+model Challenge {
+  id Int @id @default(autoincrement())
+
+  // tag は人間が分かりやすくするため
+  // args はプログラムの引数になる
+  tag String @db.VarChar(16)
+
+  createdAt DateTime @default(now())
+  args      Json
+  score     Int
+
+  // 対象 (e.g., 1-10, 1,2,3)
+  target String @db.VarChar(32)
+
+  // 解けた問題数
+  solved Int
+  // 失敗数
+  failed Int
+
+  solutions Solution[]
+  failures  Failure[]
 }
