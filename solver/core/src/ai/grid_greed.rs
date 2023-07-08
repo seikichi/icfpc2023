@@ -1,6 +1,6 @@
 use glam::Vec2;
 
-use crate::{input, Attendee, Solution};
+use crate::{input, Solution};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -31,7 +31,6 @@ impl HeadAI for GridGreedAI {
         let sampling_num = candidates.len().min(1000.max(musicians.len() * 10));
         candidates.shuffle(&mut rng);
         candidates.resize(sampling_num, Vec2::ZERO);
-        println!("{}", candidates.len());
         // 各musiciansについて、candidatesのoclussionを無視したスコアを計算
         let mut rough_scores = vec![];
         for i in 0..candidates.len() {
@@ -39,7 +38,7 @@ impl HeadAI for GridGreedAI {
             for j in 0..attendees.len() {
                 let diff = attendees[j].pos - candidates[i];
                 let squared_distance = diff.dot(diff);
-                let s = (1_000_000.0 / squared_distance);
+                let s = 1_000_000.0 / squared_distance;
                 for k in 0..musicians.len() {
                     let taste = attendees[j].tastes[musicians[k].instrument as usize];
                     musicians_scores[k] += (taste * s).ceil() as i64;
@@ -65,21 +64,4 @@ impl HeadAI for GridGreedAI {
         }
         Solution { placements }
     }
-}
-
-// k番目の musician に関するoclussion は無視したスコアを返す。
-// 戻り値は配列であり、i番目の値はi番目の客からkが得るスコアである。
-fn calculate_rough_score_of_a_musician(input: &input::Input, pos: Vec2, k: usize) -> i64 {
-    let attendees = &input.attendees;
-    let musicians = &input.musicians;
-
-    let mut score = 0;
-    for i in 0..attendees.len() {
-        let taste = attendees[i].tastes[musicians[k].instrument as usize];
-        let diff = attendees[i].pos - pos;
-        let squared_distance = diff.dot(diff);
-        let s = (1_000_000.0 * taste / squared_distance).ceil() as i64;
-        score += s;
-    }
-    score
 }
