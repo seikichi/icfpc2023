@@ -35,6 +35,9 @@ struct Opt {
     #[structopt(short = "q", help = "disable debug log")]
     quiet: bool,
 
+    #[structopt(short = "Q", help = "disable debug and info log")]
+    super_quiet: bool,
+
     #[structopt(long = "annealing-seconds", default_value = "10")]
     annealing_seconds: u64,
 }
@@ -68,7 +71,13 @@ pub fn run() -> anyhow::Result<()> {
     let opt = Opt::from_args();
 
     // init logger
-    let loglevel = if opt.quiet { "info" } else { "debug" };
+    let loglevel = if opt.super_quiet {
+        "warn"
+    } else if opt.quiet {
+        "info"
+    } else {
+        "debug"
+    };
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or(loglevel)).init();
 
     let (mut head_ai, chained_ais) = parse_ai_string(&opt.ai, &opt)?;
