@@ -93,7 +93,9 @@ pub fn run() -> anyhow::Result<()> {
         .to_string_lossy()
         .to_string();
 
-    let input = input::load_from_file(opt.input_path.clone())?;
+    let problem_number = problem_id.parse::<i32>().unwrap();
+
+    let input = input::load_from_file(opt.input_path.clone(), problem_number)?;
 
     let mut solution = head_ai.solve(&input);
     let mut score_history = vec![];

@@ -126,9 +126,18 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
 }
 
 #[test]
+fn test_validation() {
+    let input_path = "../../solver/problems/52.json";
+    let input = input::load_from_file(input_path.clone(), 52).unwrap();
+    let solution_path = "../../solver/test_data/submission-p52-2023-07-08T10_20_52.095158367Z.json";
+    let solution = output::load_from_file(solution_path.clone()).unwrap();
+    assert!(validate_solution(&input, &solution).is_err());
+}
+
+#[test]
 fn test_calculate() {
     let input_path = "../../solver/problems/42.json";
-    let input = input::load_from_file(input_path.clone()).unwrap();
+    let input = input::load_from_file(input_path.clone(), 42).unwrap();
     let solution_path = "../../solver/test_data/42.json";
     let solution = output::load_from_file(solution_path.clone()).unwrap();
     let score = calculate(&input, &solution).unwrap();
@@ -138,7 +147,7 @@ fn test_calculate() {
 #[test]
 fn test_differential_calculator() {
     let input_path = "../../solver/problems/42.json";
-    let input = input::load_from_file(input_path.clone()).unwrap();
+    let input = input::load_from_file(input_path.clone(), 42).unwrap();
     let solution_path = "../../solver/test_data/42.json";
 
     let mut current_solution = output::load_from_file(solution_path.clone()).unwrap();

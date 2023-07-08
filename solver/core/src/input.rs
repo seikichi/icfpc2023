@@ -7,6 +7,7 @@ pub struct Input {
     pub room: Room,
     pub musicians: Vec<Musican>,
     pub attendees: Vec<Attendee>,
+    pub version: u8,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -27,12 +28,13 @@ pub struct RawAttendee {
     tastes: Vec<f32>,
 }
 
-pub fn load_from_file<P: AsRef<Path>>(path: P) -> io::Result<Input> {
+pub fn load_from_file<P: AsRef<Path>>(path: P, problem_number: i32) -> io::Result<Input> {
     let s = std::fs::read_to_string(path)?;
-    load_from_str(&s)
+    load_from_str(&s, problem_number)
 }
 
-pub fn load_from_str(s: &str) -> io::Result<Input> {
+pub fn load_from_str(s: &str, problem_number: i32) -> io::Result<Input> {
+    let version = if problem_number <= 55 { 1 } else { 2 };
     let input: RawInput = serde_json::from_str(s)?;
     let room = Room {
         size: Vec2::new(input.room_width, input.room_height),
@@ -56,5 +58,6 @@ pub fn load_from_str(s: &str) -> io::Result<Input> {
         room,
         musicians,
         attendees,
+        version,
     })
 }
