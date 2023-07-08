@@ -35,7 +35,7 @@ pub fn calculate_score_of_a_musician(
 
     let mut scores = vec![0; attendees.len()];
     for i in 0..attendees.len() {
-        let intersection = is_occluded(solution, attendees[i].pos, k);
+        let intersection = is_occluded(input, solution, attendees[i].pos, k);
         if intersection == Intersection::Hit {
             continue;
         }
@@ -102,8 +102,9 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
 // Hit: 遮蔽されている
 // None: 遮蔽されていない
 // Tangent: 接している
-fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
+fn is_occluded(input: &Input, solution: &Solution, p1: Vec2, k: usize) -> Intersection {
     let placements = &solution.placements;
+    let pillars = &input.pillars; // input.version < 2 のときは空
     let p2 = placements[k];
     let mut tangent = false;
     for k_ in 0..placements.len() {
@@ -112,11 +113,17 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
         }
         let intersection = segment_circle_intersection(p1, p2, 5.0, placements[k_]);
         match intersection {
-            Intersection::Hit => return Intersection::Hit,
             Intersection::None => {}
-            Intersection::Tagent => {
-                tangent = true;
-            }
+            Intersection::Hit => return Intersection::Hit,
+            Intersection::Tagent => tangent = true,
+        }
+    }
+    for pillar in pillars {
+        let intersection = segment_circle_intersection(p1, p2, pillar.radius, pillar.center);
+        match intersection {
+            Intersection::None => {}
+            Intersection::Hit => return Intersection::Hit,
+            Intersection::Tagent => tangent = true,
         }
     }
     if tangent {
@@ -268,15 +275,15 @@ fn test_differential_calculator2() {
 // スコアを差分計算するための struct
 #[derive(Clone, Debug)]
 pub struct DifferentialCalculator {
-    // n_occlusion[k][i]: k番目の musician と i番目の客の間が何人の musician によって遮蔽されているか
+    // n_occlusion[k][i]: k番目の musician と i番目の客の間が何人の musician または pillar によって遮蔽されているか
     n_occlusion: Vec<Vec<u32>>,
 
-    // n_tangent[k][i]: k番目の musician と i番目の客を結ぶ線分が何人の musician の当たり判定に接するか
+    // n_tangent[k][i]: k番目の musician と i番目の客を結ぶ線分が何人の musician または pillar の当たり判定に接するか
     n_tangent: Vec<Vec<u32>>,
 }
 
 impl DifferentialCalculator {
-    // O(M^2 A)
+    // O((M+P)MA)
     pub fn new(input: &Input, solution: &Solution) -> Self {
         let n_attendees = input.attendees.len();
         let n_musicians = input.musicians.len();
@@ -289,10 +296,11 @@ impl DifferentialCalculator {
     }
 
     // 内部状態を solution と対応するように初期化する。
-    // O(M^2 A)
+    // O((M+P)MA)
     fn initialize(&mut self, input: &Input, solution: &Solution) {
         let musician = &input.musicians;
         let attendees = &input.attendees;
+        let pillars = &input.pillars;
         let placements = &solution.placements;
 
         // n_occlusion と n_tangent を埋める
@@ -306,12 +314,17 @@ impl DifferentialCalculator {
                     }
                     let intersection = segment_circle_intersection(p1, p2, 5.0, placements[k_]);
                     match intersection {
-                        Intersection::Hit => {
-                            self.n_occlusion[k][i] += 1;
-                        }
-                        Intersection::Tagent => {
-                            self.n_tangent[k][i] += 1;
-                        }
+                        Intersection::Hit => self.n_occlusion[k][i] += 1,
+                        Intersection::Tagent => self.n_tangent[k][i] += 1,
+                        Intersection::None => {}
+                    }
+                }
+                for pillar in pillars {
+                    let intersection =
+                        segment_circle_intersection(p1, p2, pillar.radius, pillar.center);
+                    match intersection {
+                        Intersection::Hit => self.n_occlusion[k][i] += 1,
+                        Intersection::Tagent => self.n_tangent[k][i] += 1,
                         Intersection::None => {}
                     }
                 }
@@ -335,7 +348,7 @@ impl DifferentialCalculator {
     }
 
     // 内部状態を k を new_k_pos に移動したあとの状態に更新する。
-    // O(MA)
+    // O((M+P)A)
     fn update_internal_state(
         &mut self,
         input: &Input,
@@ -345,6 +358,7 @@ impl DifferentialCalculator {
     ) {
         let musician = &input.musicians;
         let attendees = &input.attendees;
+        let pillars = &input.pillars;
 
         // 現在の k によって遮蔽されているペアの遮蔽カウントを1減らす
         let current_k_pos = current_solution.placements[k];
@@ -401,12 +415,17 @@ impl DifferentialCalculator {
                 let p3 = current_solution.placements[k_];
                 let intersection = segment_circle_intersection(new_k_pos, p2, 5.0, p3);
                 match intersection {
-                    Intersection::Hit => {
-                        n_hit += 1;
-                    }
-                    Intersection::Tagent => {
-                        n_tangent += 1;
-                    }
+                    Intersection::Hit => n_hit += 1,
+                    Intersection::Tagent => n_tangent += 1,
+                    Intersection::None => {}
+                }
+            }
+            for pillar in pillars {
+                let intersection =
+                    segment_circle_intersection(new_k_pos, p2, pillar.radius, pillar.center);
+                match intersection {
+                    Intersection::Hit => n_hit += 1,
+                    Intersection::Tagent => n_tangent += 1,
                     Intersection::None => {}
                 }
             }
