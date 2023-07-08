@@ -128,7 +128,7 @@ fn test_calculate() {
     let solution_path = "../../solver/test_data/42.json";
     let solution = output::load_from_file(solution_path.clone()).unwrap();
     let score = calculate(&input, &solution).unwrap();
-    // assert!(score == 6736676);
+    assert_eq!(score / 100, 6736676 / 100); // 下二桁は気にしない
 }
 
 #[test]
@@ -139,7 +139,7 @@ fn test_differential_calculator() {
 
     let mut current_solution = output::load_from_file(solution_path.clone()).unwrap();
     let current_score = calculate(&input, &current_solution).unwrap();
-    // assert!(current_score == 6736676);
+    assert_eq!(current_score / 100, 6736676 / 100); // 下二桁は気にしない
 
     let mut dc = DifferentialCalculator::new(&input, &current_solution);
 
@@ -192,10 +192,10 @@ fn test_differential_calculator2() {
     };
     let mut dc = DifferentialCalculator::new(&input, &current_solution);
     // println!("{:?}", dc.n_occlusion);
-    // assert!(dc.n_occlusion[0][0] == 0);
-    // assert!(dc.n_occlusion[0][1] == 0);
-    // assert!(dc.n_occlusion[1][0] == 1);
-    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_occlusion[0][0] == 0);
+    assert!(dc.n_occlusion[0][1] == 0);
+    assert!(dc.n_occlusion[1][0] == 1);
+    assert!(dc.n_occlusion[1][1] == 0);
     assert!(dc.n_tangent[0][0] == 0);
     assert!(dc.n_tangent[0][1] == 0);
     assert!(dc.n_tangent[1][0] == 0);
@@ -203,10 +203,10 @@ fn test_differential_calculator2() {
 
     let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 30.0));
     current_solution.placements[0] = Vec2::new(40.0, 30.0);
-    // assert!(dc.n_occlusion[0][0] == 0);
-    // assert!(dc.n_occlusion[0][1] == 0);
-    // assert!(dc.n_occlusion[1][0] == 0);
-    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_occlusion[0][0] == 0);
+    assert!(dc.n_occlusion[0][1] == 0);
+    assert!(dc.n_occlusion[1][0] == 0);
+    assert!(dc.n_occlusion[1][1] == 0);
     assert!(dc.n_tangent[0][0] == 0);
     assert!(dc.n_tangent[0][1] == 0);
     assert!(dc.n_tangent[1][0] == 0);
@@ -216,10 +216,10 @@ fn test_differential_calculator2() {
 
     let score2 = dc.move_one(&input, &current_solution, 1, Vec2::new(60.0, 30.0));
     current_solution.placements[1] = Vec2::new(60.0, 30.0);
-    // assert!(dc.n_occlusion[0][0] == 0);
-    // assert!(dc.n_occlusion[0][1] == 0);
-    // assert!(dc.n_occlusion[1][0] == 0);
-    // assert!(dc.n_occlusion[1][1] == 1);
+    assert!(dc.n_occlusion[0][0] == 0);
+    assert!(dc.n_occlusion[0][1] == 0);
+    assert!(dc.n_occlusion[1][0] == 0);
+    assert!(dc.n_occlusion[1][1] == 1);
     assert!(dc.n_tangent[0][0] == 0);
     assert!(dc.n_tangent[0][1] == 0);
     assert!(dc.n_tangent[1][0] == 0);
@@ -229,10 +229,10 @@ fn test_differential_calculator2() {
 
     let score2 = dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 25.0));
     current_solution.placements[0] = Vec2::new(40.0, 25.0);
-    // assert!(dc.n_occlusion[0][0] == 0);
-    // assert!(dc.n_occlusion[0][1] == 0);
-    // assert!(dc.n_occlusion[1][0] == 1);
-    // assert!(dc.n_occlusion[1][1] == 0);
+    assert!(dc.n_occlusion[0][0] == 0);
+    assert!(dc.n_occlusion[0][1] == 0);
+    assert!(dc.n_occlusion[1][0] == 1);
+    assert!(dc.n_occlusion[1][1] == 0);
     assert!(dc.n_tangent[0][0] == 0);
     assert!(dc.n_tangent[0][1] == 0);
     assert!(dc.n_tangent[1][0] == 0);
