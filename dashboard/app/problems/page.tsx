@@ -12,6 +12,7 @@ import {
   DeltaType,
 } from "@tremor/react";
 import Link from "next/link";
+import Image from "next/image";
 
 export const revalidate = 600;
 
@@ -27,6 +28,7 @@ export default async function Page() {
           <TableHead>
             <TableRow>
               <TableHeaderCell>Problem ID</TableHeaderCell>
+              <TableHeaderCell>Thumbnail</TableHeaderCell>
               <TableHeaderCell className="text-right">Score</TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -36,6 +38,19 @@ export default async function Page() {
               <TableRow key={p.id}>
                 <TableCell>
                   <Link href={`/problems/${p.id}`}>{p.id}</Link>
+                </TableCell>
+                <TableCell>
+                  <a href={`/problems/${p.id}`}>
+                    <Image
+                      alt={`${p.id}`}
+                      src={`/problems/${p.id}.png`}
+                      height={100}
+                      width={100}
+                      style={{
+                        objectFit: "cover",
+                      }}
+                    />
+                  </a>
                 </TableCell>
                 <TableCell className="text-right">T.B.D.</TableCell>
               </TableRow>
