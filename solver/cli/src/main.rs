@@ -7,23 +7,12 @@ use core::*;
 
 use anyhow::bail;
 use log::info;
-use std::{fs, path::PathBuf, time::Duration};
+use std::{path::PathBuf, time::Duration};
 use structopt::StructOpt;
 
 fn main() -> anyhow::Result<()> {
     run()?;
     Ok(())
-}
-
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub struct RawPlacement {
-    x: f32,
-    y: f32,
-}
-
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub struct RawSolution {
-    placements: Vec<RawPlacement>,
 }
 
 #[derive(Debug, StructOpt)]
@@ -73,7 +62,7 @@ fn parse_ai_string(
     Ok((head_ai, chained_ais))
 }
 
-pub fn run() -> anyhow::Result<Output> {
+pub fn run() -> anyhow::Result<()> {
     let opt = Opt::from_args();
 
     // init logger
@@ -109,21 +98,8 @@ pub fn run() -> anyhow::Result<Output> {
         info!("    {i}: {score}")
     }
 
-    let raw_solution = RawSolution {
-        placements: solution
-            .placements
-            .iter()
-            .map(|p| RawPlacement { x: p.x, y: p.y })
-            .collect(),
-    };
-
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
-    let output_json = serde_json::to_string(&raw_solution)?;
     info!("output JSON to: {}", output_filename.to_string_lossy());
-    fs::write(output_filename, output_json)?;
-
-    Ok(Output {})
+    output::save_to_file(output_filename, &solution)?;
+    Ok(())
 }
-
-#[derive(Clone, Debug)]
-pub struct Output {}
