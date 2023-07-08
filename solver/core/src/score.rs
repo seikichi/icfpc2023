@@ -286,6 +286,24 @@ fn test_line_circle_intersection() {
             line_circle_intersection(p1, p2, r, center),
             Intersection::None
         );
+
+        // let p1 = Vec2::new(12.0, 1.0);
+        // let p2 = Vec2::new(22.0, 1.0);
+        // let r = 1.0;
+        // let center = Vec2::new(0.0, 0.0);
+        // assert_eq!(
+        //     line_circle_intersection(p1, p2, r, center),
+        //     Intersection::None
+        // );
+
+        // let p1 = Vec2::new(12.0, 0.0);
+        // let p2 = Vec2::new(22.0, 0.0);
+        // let r = 1.0;
+        // let center = Vec2::new(0.0, 0.0);
+        // assert_eq!(
+        //     line_circle_intersection(p1, p2, r, center),
+        //     Intersection::None
+        // );
     }
 }
 
