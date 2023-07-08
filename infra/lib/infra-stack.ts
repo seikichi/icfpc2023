@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as s3 from "aws-cdk-lib/aws-s3";
 // import * as sns from "aws-cdk-lib/aws-sns";
 // import * as sqs from "aws-cdk-lib/aws-sqs";
 // import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
@@ -28,7 +29,7 @@ export class InfraStack extends cdk.Stack {
       .toString()
       .trim();
 
-    new lambda.DockerImageFunction(this, "Solver", {
+    const solver = new lambda.DockerImageFunction(this, "Solver", {
       code: lambda.DockerImageCode.fromImageAsset("../", {
         file: "lambda/solver/Dockerfile",
       }),
@@ -40,6 +41,12 @@ export class InfraStack extends cdk.Stack {
         API_TOKEN: env.API_TOKEN,
       },
     });
+
+    const bucket = new s3.Bucket(this, "Bucket", {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    bucket.grantReadWrite(solver);
 
     // SNS & SQS & Lambda test
     // const topic = new sns.Topic(this, "Topic");
