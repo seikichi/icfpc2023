@@ -6,7 +6,7 @@ import { prisma } from "../lib/db";
 
 (async () => {
   logger.info({ message: "seed problems" });
-  for (let id = 1; id <= 55; id++) {
+  for (let id = 1; id <= 90; id++) {
     await prisma.problem.upsert({
       where: { id },
       create: { id },
