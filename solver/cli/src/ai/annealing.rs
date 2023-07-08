@@ -16,6 +16,8 @@ pub struct AnnealingAI {
 
 impl ChainedAI for AnnealingAI {
     fn solve(&mut self, input: &Input, initial_solution: &Solution) -> Solution {
+        let stage_pos = input.room.stage_pos;
+        let stage_size = input.room.stage_size;
         let musicians = &input.musicians;
 
         let mut solution = initial_solution.clone();
@@ -50,10 +52,10 @@ impl ChainedAI for AnnealingAI {
             let old_solution = solution.clone();
 
             // move to neighbor
-            let n_methods = 2;
-            let method = rng.gen::<u32>() % n_methods;
-            match method {
-                0 => {
+            // let n_methods = 2;
+            let method_r = rng.gen::<u32>() % 10;
+            match method_r {
+                0..=3 => {
                     // 0. swap する
                     let mut k1 = rng.gen::<usize>() % musicians.len();
                     let mut k2 = rng.gen::<usize>() % musicians.len();
@@ -61,24 +63,37 @@ impl ChainedAI for AnnealingAI {
                         k1 = rng.gen::<usize>() % musicians.len();
                         k2 = rng.gen::<usize>() % musicians.len();
                     }
+                    if musicians[k1].instrument == musicians[k2].instrument {
+                        continue;
+                    }
                     solution.placements.swap(k1, k2);
                 }
-                1 => {
+                4..=10 => {
                     // 1. 適当な musician を少し動かす
-                    const MAX_DELTA: f32 = 10.0;
+                    // 動かす範囲は温度によって徐々に狭める
+                    let max_delta: f32 = stage_size.x.max(stage_size.y)
+                        * 0.1
+                        * (temperature / initial_temperature) as f32;
                     let k = rng.gen::<usize>() % musicians.len();
-                    let delta = rng.gen::<f32>() * MAX_DELTA;
+                    let delta = rng.gen::<f32>() * max_delta;
                     let angle = rng.gen::<f32>() * 2.0 * PI;
                     let v = delta * Vec2::new(angle.cos(), angle.sin());
-                    solution.placements[k] += v;
+                    let mut p = solution.placements[k] + v;
+                    p.x = p.x.max(stage_pos.x + 10.0);
+                    p.y = p.y.max(stage_pos.y + 10.0);
+                    p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
+                    p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
+                    solution.placements[k] = p;
                 }
                 _ => {
-                    panic!("no such method: {method}")
+                    panic!("no such method: {method_r}")
                 }
             }
 
             let new_score = score::calculate(input, &solution);
-            info!("new_score = {:?}", new_score);
+            if iter % 100 == 0 {
+                info!("new_score = {:?}", new_score);
+            }
 
             // 新しい解を受理するか決める
             let accept = {

@@ -47,6 +47,7 @@ fn parse_ai_string(
     let head_ai: Box<dyn ai::HeadAI> = match parts[0] {
         "Grid" => Box::new(ai::GridAI {}),
         "GridGreed" => Box::new(ai::GridGreedAI {}),
+        "RandomPut" => Box::new(ai::RandomPutAI {}),
         x => bail!("'{x}' is not a HeadAI"),
     };
     let mut chained_ais = vec![];
