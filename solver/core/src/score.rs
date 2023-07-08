@@ -35,7 +35,7 @@ pub fn calculate_score_of_a_musician(
 
     let mut scores = vec![0; attendees.len()];
     for i in 0..attendees.len() {
-        let intersection = is_occluded(solution, attendees[i].pos, k);
+        let intersection = is_occluded(input, solution, attendees[i].pos, k);
         if intersection == Intersection::Hit {
             continue;
         }
@@ -102,8 +102,9 @@ pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::R
 // Hit: 遮蔽されている
 // None: 遮蔽されていない
 // Tangent: 接している
-fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
+fn is_occluded(input: &Input, solution: &Solution, p1: Vec2, k: usize) -> Intersection {
     let placements = &solution.placements;
+    let pillars = &input.pillars; // input.version < 2 のときは空
     let p2 = placements[k];
     let mut tangent = false;
     for k_ in 0..placements.len() {
@@ -112,11 +113,17 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
         }
         let intersection = segment_circle_intersection(p1, p2, 5.0, placements[k_]);
         match intersection {
-            Intersection::Hit => return Intersection::Hit,
             Intersection::None => {}
-            Intersection::Tagent => {
-                tangent = true;
-            }
+            Intersection::Hit => return Intersection::Hit,
+            Intersection::Tagent => tangent = true,
+        }
+    }
+    for pillar in pillars {
+        let intersection = segment_circle_intersection(p1, p2, pillar.radius, pillar.center);
+        match intersection {
+            Intersection::None => {}
+            Intersection::Hit => return Intersection::Hit,
+            Intersection::Tagent => tangent = true,
         }
     }
     if tangent {
