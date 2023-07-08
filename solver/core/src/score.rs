@@ -169,7 +169,7 @@ fn test_differential_calculator() {
 
     // 0番目の musician を今と同じ場所に移動させる
     let pos0 = current_solution.placements[0];
-    let next_score = dc.move_one(&input, &current_solution, current_score, 0, pos0);
+    let next_score = dc.move_one(&input, &current_solution, 0, pos0);
 
     // スコアは変化しないはず
     assert_eq!(current_score, next_score);
@@ -260,18 +260,11 @@ impl DifferentialCalculator {
         &mut self,
         input: &Input,
         current_solution: &Solution,
-        current_score: i64,
         k: usize,
         new_k_pos: Vec2,
     ) -> i64 {
-        let current_score_of_k =
-            self.calculate_score_of_a_musician(input, k, current_solution.placements[k]);
-
         self.update_n_occulusion(input, current_solution, k, new_k_pos);
-
-        let new_score_of_k = self.calculate_score_of_a_musician(input, k, new_k_pos);
-
-        return current_score - current_score_of_k + new_score_of_k;
+        self.calculate_score(input, current_solution, k, new_k_pos)
     }
 
     // O(MA)
@@ -337,9 +330,31 @@ impl DifferentialCalculator {
         }
     }
 
+    // スコアを返す。このスコアは非負化されていない。
+    // O(MA)
+    fn calculate_score(
+        &self,
+        input: &Input,
+        current_solution: &Solution,
+        k: usize,
+        new_k_pos: Vec2,
+    ) -> i64 {
+        let musicians = &input.musicians;
+        let mut score = 0;
+        for k_ in 0..musicians.len() {
+            let pos = if k_ == k {
+                new_k_pos
+            } else {
+                current_solution.placements[k_]
+            };
+            score += self.calculate_score_of_a_musician(input, k_, pos);
+        }
+        score
+    }
+
     // k番目の musician に関するスコアを返す。
     // O(A)
-    fn calculate_score_of_a_musician(&self, input: &input::Input, k: usize, k_pos: Vec2) -> i64 {
+    fn calculate_score_of_a_musician(&self, input: &Input, k: usize, k_pos: Vec2) -> i64 {
         let attendees = &input.attendees;
         let musicians = &input.musicians;
 
