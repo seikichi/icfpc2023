@@ -1,5 +1,6 @@
 // Lambda 実行用
 
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { promisify } from "util";
 import * as path from "path";
 import * as child_process from "child_process";
@@ -14,11 +15,7 @@ const exec = promisify(child_process.exec);
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// 単独実行可能にする
-// パラメーターで problemId を取る
-// fetch で problem 取得
-// env で色々渡す (パス)
-// solver 実行
+const s3 = new S3Client({ region: "ap-northeast-1" });
 
 // S3 用意
 // DB 保存
@@ -37,6 +34,7 @@ const SolverOutput = z.object({
 type SolverOutput = z.infer<typeof SolverOutput>;
 
 const Env = z.object({
+  BUCKET: z.string().min(1),
   DATABASE_URL: z.string().startsWith("mysql://"),
   COMMIT_ID: z.string().min(1),
   API_TOKEN: z.string().startsWith("eyJ"),
@@ -90,16 +88,21 @@ export async function main(params: Params) {
     });
     const submission = { problem_id: problemId, contents };
 
-    const result = await fetch("https://api.icfpcontest.com/submission", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.API_TOKEN}`,
-      },
-      body: JSON.stringify(submission),
-    });
-    if (!result.ok) {
-      throw await result.text();
+    // POST 失敗するかもしれないので...
+    try {
+      const result = await fetch("https://api.icfpcontest.com/submission", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${env.API_TOKEN}`,
+        },
+        body: JSON.stringify(submission),
+      });
+      if (!result.ok) {
+        console.log(await result.text());
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     console.log("stdout:");
@@ -121,14 +124,18 @@ export async function main(params: Params) {
     };
     console.log(record);
 
-    // TODO: update file to s3
-    // TODO: try to download the file
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: env.BUCKET,
+        Key: bucketKey,
+        Body: contents,
+      })
+    );
 
-    // await prisma.solution.create({
-    //   data: record,
-    // });
-    // https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/example_s3_Scenario_PresignedUrl_section.html
+    await prisma.solution.create({ data: record });
   } catch (e) {
+    console.error(e);
+
     // MEMO: Is this correct?
     const elapsedSec = Math.ceil((performance.now() - start) / 1000);
     const error = JSON.stringify(e).slice(512);
@@ -140,6 +147,6 @@ export async function main(params: Params) {
       elapsedSec,
     };
     console.error(record);
-    console.error(e);
+    await prisma.failure.create({ data: record });
   }
 }
