@@ -11,7 +11,6 @@ import * as child_process from "child_process";
 const Env = z.object({
   DATABASE_URL: z.string().startsWith("mysql://"),
   API_TOKEN: z.string().startsWith("eyJ"),
-  BUCKET: z.string().min(1),
 });
 
 const env = Env.parse(process.env);
@@ -26,6 +25,10 @@ export class InfraStack extends cdk.Stack {
       .toString()
       .trim();
 
+    const bucket = new s3.Bucket(this, "Bucket", {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     const solver = new lambda.DockerImageFunction(this, "Solver", {
       code: lambda.DockerImageCode.fromImageAsset("../", {
         file: "lambda/solver/Dockerfile",
@@ -36,12 +39,8 @@ export class InfraStack extends cdk.Stack {
         DATABASE_URL: env.DATABASE_URL,
         COMMIT_ID: commitHash,
         API_TOKEN: env.API_TOKEN,
-        BUCKET: env.BUCKET,
+        BUCKET: bucket.bucketName,
       },
-    });
-
-    const bucket = new s3.Bucket(this, "Bucket", {
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     bucket.grantReadWrite(solver);
