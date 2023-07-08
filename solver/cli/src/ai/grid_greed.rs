@@ -11,57 +11,77 @@ pub struct GridGreedAI {}
 impl HeadAI for GridGreedAI {
     fn solve(&mut self, input: &input::Input) -> Solution {
         let mut rng = thread_rng();
-        let musicians = &input.musicians;
+        let mut best_score = -1 << 60;
+        let mut best_placements = vec![];
+        let musicians: &Vec<core::Musican> = &input.musicians;
         let attendees = &input.attendees;
-        let mut candidates = vec![];
-        // グリッド状における位置の列挙
-        for i in 0..10000 {
-            let y = input.room.stage_pos.y + 10.0 * ((i + 1) as f32);
-            if y > input.room.stage_pos.y + input.room.stage_size.y - 10.0 {
-                break;
-            }
-            for j in 0..10000 {
-                let x = input.room.stage_pos.x + 10.0 * ((j + 1) as f32);
-                if x > input.room.stage_pos.x + input.room.stage_size.x - 10.0 {
+        for iter in 0..4 {
+            let mut candidates = vec![];
+            // グリッド状における位置の列挙
+            let l = input.room.stage_pos.x;
+            let r = l + input.room.stage_size.x;
+            let t = input.room.stage_pos.y;
+            let b = t + input.room.stage_size.y;
+            let sx = [l, l, r, r][iter];
+            let sy = [t, b, t, b][iter];
+            let dx = [10.0, 10.0, -10.0, -10.0][iter];
+            let dy = [10.0, -10.0, 10.0, -10.0][iter];
+            for i in 0..10000 {
+                let y = sy + dy * ((i + 1) as f32);
+                if y < t + 10.0 || b - 10.0 < y {
                     break;
                 }
-                candidates.push(Vec2 { x, y });
-            }
-        }
-        let sampling_num = candidates.len().min(1000.max(musicians.len() * 10));
-        candidates.shuffle(&mut rng);
-        candidates.resize(sampling_num, Vec2::ZERO);
-        // 各musiciansについて、candidatesのoclussionを無視したスコアを計算
-        let mut rough_scores = vec![];
-        for i in 0..candidates.len() {
-            let mut musicians_scores = vec![0; musicians.len()];
-            for j in 0..attendees.len() {
-                let diff = attendees[j].pos - candidates[i];
-                let squared_distance = diff.dot(diff);
-                let s = 1_000_000.0 / squared_distance;
-                for k in 0..musicians.len() {
-                    let taste = attendees[j].tastes[musicians[k].instrument as usize];
-                    musicians_scores[k] += (taste * s).ceil() as i64;
+                for j in 0..10000 {
+                    let x = sx + dx * ((j + 1) as f32);
+                    if x < l + 10.0 || r - 10.0 < x {
+                        break;
+                    }
+                    candidates.push(Vec2 { x, y });
                 }
             }
-            for k in 0..musicians.len() {
-                rough_scores.push((musicians_scores[k], k, i));
+            let sampling_num = candidates.len().min(1000.max(musicians.len() * 10));
+            candidates.shuffle(&mut rng);
+            candidates.resize(sampling_num, Vec2::ZERO);
+            // 各musiciansについて、candidatesのoclussionを無視したスコアを計算
+            let mut rough_scores = vec![];
+            for i in 0..candidates.len() {
+                let mut musicians_scores = vec![0; musicians.len()];
+                for j in 0..attendees.len() {
+                    let diff = attendees[j].pos - candidates[i];
+                    let squared_distance = diff.dot(diff);
+                    let s = 1_000_000.0 / squared_distance;
+                    for k in 0..musicians.len() {
+                        let taste = attendees[j].tastes[musicians[k].instrument as usize];
+                        musicians_scores[k] += (taste * s).ceil() as i64;
+                    }
+                }
+                for k in 0..musicians.len() {
+                    rough_scores.push((musicians_scores[k], k, i));
+                }
+            }
+            rough_scores.sort();
+            rough_scores.reverse();
+            let mut sum_score = 0;
+            // 点数の高いほうからcandidatesを貪欲に使ってmusiciansを埋めていく
+            let mut musicians_used = vec![false; musicians.len()];
+            let mut candidates_used = vec![false; candidates.len()];
+            let mut placements: Vec<Vec2> = vec![Vec2::ZERO; musicians.len()];
+            for &(s, k, i) in rough_scores.iter() {
+                if musicians_used[k] || candidates_used[i] {
+                    continue;
+                }
+                sum_score += s;
+                musicians_used[k] = true;
+                candidates_used[i] = true;
+                placements[k] = candidates[i];
+            }
+            if sum_score > best_score {
+                best_placements = placements;
+                best_score = sum_score;
             }
         }
-        rough_scores.sort();
-        rough_scores.reverse();
-        // 点数の高いほうからcandidatesを貪欲に使ってmusiciansを埋めていく
-        let mut musicians_used = vec![false; musicians.len()];
-        let mut candidates_used = vec![false; candidates.len()];
-        let mut placements: Vec<Vec2> = vec![Vec2::ZERO; musicians.len()];
-        for &(_s, k, i) in rough_scores.iter() {
-            if musicians_used[k] || candidates_used[i] {
-                continue;
-            }
-            musicians_used[k] = true;
-            candidates_used[i] = true;
-            placements[k] = candidates[i];
+        Solution {
+            placements: best_placements,
         }
-        Solution { placements }
     }
 }
