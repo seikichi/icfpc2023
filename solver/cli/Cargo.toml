@@ -6,3 +6,10 @@ edition = "2021"
 [dependencies]
 core = { path = "../core" }
 anyhow = "1.0.71"
+rand = { version = "0.8.5", features = ["small_rng"] }
+glam = { version = "0.24.1", features = ["serde"] }
+env_logger = "0.10.0"
+log = "0.4.19"
+serde = { version = "1.0.167", features = ["derive"] }
+serde_json = "1.0.100"
+structopt = { version = "0.3.26", default-features = false }

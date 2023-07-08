@@ -70,6 +70,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "core",
+ "env_logger",
+ "glam",
+ "log",
+ "rand",
+ "serde",
+ "serde_json",
+ "structopt",
 ]
 
 [[package]]
@@ -90,10 +97,8 @@ dependencies = [
  "env_logger",
  "glam",
  "log",
- "rand",
  "serde",
  "serde_json",
- "structopt",
 ]
 
 [[package]]
