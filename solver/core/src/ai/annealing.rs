@@ -56,11 +56,11 @@ impl ChainedAI for AnnealingAI {
 
             // 新しい解を受理するか決める
             let accept = {
-                if new_score < current_score {
+                if new_score > current_score {
                     true
                 } else {
-                    // new_score >= current_score
-                    let delta = new_score - current_score;
+                    // new_score <= current_score
+                    let delta = current_score - new_score;
                     let accept_prob = (-delta as f64 / temperature).exp();
                     rng.gen::<f64>() < accept_prob
                 }
