@@ -20,7 +20,14 @@ pub fn load_from_file<P: AsRef<Path>>(path: P) -> io::Result<Solution> {
 
 #[allow(dead_code)]
 pub fn load_from_str(s: &str) -> io::Result<Solution> {
-    let solution: Solution = serde_json::from_str(s)?;
+    let raw_solution: RawSolution = serde_json::from_str(s)?;
+    let solution = Solution {
+        placements: raw_solution
+            .placements
+            .iter()
+            .map(|p| Vec2::new(p.x, p.y))
+            .collect(),
+    };
     Ok(solution)
 }
 
