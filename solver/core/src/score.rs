@@ -176,6 +176,54 @@ fn test_differential_calculator() {
 }
 
 #[test]
+fn test_differential_calculator2() {
+    let room = Room {
+        size: Vec2::new(100.0, 100.0),
+        stage_pos: Vec2::new(30.0, 0.0),
+        stage_size: Vec2::new(70.0, 100.0),
+    };
+    let attendees = vec![
+        Attendee {
+            pos: Vec2::new(10.0, 10.0),
+            tastes: vec![10.0, -1.0],
+        },
+        Attendee {
+            pos: Vec2::new(10.0, 30.0),
+            tastes: vec![20.0, -2.0],
+        },
+    ];
+    let musicians = vec![Musican { instrument: 0 }, Musican { instrument: 1 }];
+    let input = Input {
+        room,
+        attendees,
+        musicians,
+    };
+    let mut current_solution = Solution {
+        placements: vec![Vec2::new(40.0, 10.0), Vec2::new(60.0, 10.0)],
+    };
+    let mut dc = DifferentialCalculator::new(&input, &current_solution);
+    // println!("{:?}", dc.n_occlusion);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 1);
+    // assert!(dc.n_occlusion[1][1] == 0);
+
+    dc.move_one(&input, &current_solution, 0, Vec2::new(40.0, 30.0));
+    current_solution.placements[0] = Vec2::new(40.0, 30.0);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 0);
+    // assert!(dc.n_occlusion[1][1] == 0);
+
+    dc.move_one(&input, &current_solution, 1, Vec2::new(60.0, 30.0));
+    current_solution.placements[1] = Vec2::new(50.0, 30.0);
+    // assert!(dc.n_occlusion[0][0] == 0);
+    // assert!(dc.n_occlusion[0][1] == 0);
+    // assert!(dc.n_occlusion[1][0] == 0);
+    // assert!(dc.n_occlusion[1][1] == 1);
+}
+
+#[test]
 fn test_line_circle_intersection() {
     // hit
     {
