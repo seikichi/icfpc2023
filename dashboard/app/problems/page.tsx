@@ -44,11 +44,10 @@ export default async function Page() {
                     <Image
                       alt={`${p.id}`}
                       src={`/problems/${p.id}.png`}
-                      height={100}
-                      width={100}
-                      style={{
-                        objectFit: "cover",
-                      }}
+                      width={0}
+                      height={0}
+                      sizes="100vmax"
+                      style={{ height: "100px", width: "auto" }}
                     />
                   </a>
                 </TableCell>
