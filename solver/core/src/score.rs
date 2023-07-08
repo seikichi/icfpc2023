@@ -477,7 +477,7 @@ impl DifferentialCalculator {
         for k_ in 0..musicians.len() {
             let pos = current_solution.placements[k_];
             let together_factor =
-                calculate_togegher_factor_of_a_musician(input, current_solution, k);
+                calculate_togegher_factor_of_a_musician(input, current_solution, k_);
             score += self.calculate_score_of_a_musician(input, k_, pos, together_factor);
         }
         score
