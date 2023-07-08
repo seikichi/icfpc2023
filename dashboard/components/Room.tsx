@@ -49,12 +49,13 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       });
       try {
         await wasm();
-        const score = calculate(room_str, solution_str);
+        const score = calculate(room_str, solution_str, problemId);
         setScore(Number(score));
         const musician_scores = room.musicians.map((_, i) => {
           const score_of_a_musician = calculate_score_of_a_musician(
             room_str,
             solution_str,
+            problemId,
             i
           );
           return score_of_a_musician.reduce((a, b) => a + Number(b), 0);

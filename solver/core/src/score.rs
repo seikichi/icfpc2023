@@ -128,7 +128,7 @@ fn is_occluded(solution: &Solution, p1: Vec2, k: usize) -> Intersection {
 #[test]
 fn test_calculate() {
     let input_path = "../../solver/problems/42.json";
-    let input = input::load_from_file(input_path.clone()).unwrap();
+    let input = input::load_from_file(input_path.clone(), 42).unwrap();
     let solution_path = "../../solver/test_data/42.json";
     let solution = output::load_from_file(solution_path.clone()).unwrap();
     let score = calculate(&input, &solution).unwrap();
@@ -138,7 +138,7 @@ fn test_calculate() {
 #[test]
 fn test_differential_calculator() {
     let input_path = "../../solver/problems/42.json";
-    let input = input::load_from_file(input_path.clone()).unwrap();
+    let input = input::load_from_file(input_path.clone(), 42).unwrap();
     let solution_path = "../../solver/test_data/42.json";
 
     let mut current_solution = output::load_from_file(solution_path.clone()).unwrap();
@@ -190,6 +190,7 @@ fn test_differential_calculator2() {
         room,
         attendees,
         musicians,
+        version: 1,
     };
     let mut current_solution = Solution {
         placements: vec![Vec2::new(40.0, 10.0), Vec2::new(60.0, 10.0)],
