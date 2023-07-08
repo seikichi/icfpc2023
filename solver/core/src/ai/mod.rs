@@ -1,6 +1,8 @@
 mod grid;
+mod grid_greed;
 
 pub use grid::*;
+pub use grid_greed::*;
 
 use crate::input;
 use crate::Solution;
