@@ -219,6 +219,7 @@ struct DifferentialCalculator {
 }
 
 impl DifferentialCalculator {
+    // O(M^2 A)
     fn new(input: &Input, solution: &Solution) -> Self {
         let n_attendees = input.attendees.len();
         let n_musicians = input.musicians.len();
@@ -229,6 +230,7 @@ impl DifferentialCalculator {
         dc
     }
 
+    // 内部状態を solution と対応するように初期化する。
     // O(M^2 A)
     fn initialize(&mut self, input: &Input, solution: &Solution) {
         let musician = &input.musicians;
@@ -255,6 +257,8 @@ impl DifferentialCalculator {
     }
 
     // k番目の musician を new_k_pos に移動したあとのスコアを返す。
+    // このスコアは負の値を取りうる。
+    // 副作用として、内部状態が移動後の状態に更新される。
     // O(MA)
     pub fn move_one(
         &mut self,
@@ -267,6 +271,7 @@ impl DifferentialCalculator {
         self.calculate_score(input, current_solution, k, new_k_pos)
     }
 
+    // 内部状態を k を new_k_pos に移動したあとの状態に更新する。
     // O(MA)
     fn update_n_occulusion(
         &mut self,
@@ -330,7 +335,9 @@ impl DifferentialCalculator {
         }
     }
 
-    // スコアを返す。このスコアは非負化されていない。
+    // k を new_k_pos に移動したあとのスコアを返す。
+    // このスコアは負の値を取りうる。
+    // 内部状態が移動後の状態となっていることが前提である。
     // O(MA)
     fn calculate_score(
         &self,
@@ -353,6 +360,8 @@ impl DifferentialCalculator {
     }
 
     // k番目の musician に関するスコアを返す。
+    // このスコアは負の値を取りうる。
+    // 内部状態が移動後の状態となっていることが前提である。
     // O(A)
     fn calculate_score_of_a_musician(&self, input: &Input, k: usize, k_pos: Vec2) -> i64 {
         let attendees = &input.attendees;
