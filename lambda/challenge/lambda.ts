@@ -56,7 +56,7 @@ export const handler: Handler = async (event, _context) => {
     }
   }
 
-  for (const problemId of ids) {
+  for (const problemId of Array.from(ids)) {
     console.log(`invoke: ${problemId}`);
     await lambda.send(
       new InvokeCommand({
