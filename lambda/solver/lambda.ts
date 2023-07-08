@@ -22,7 +22,7 @@ const prisma = new PrismaClient();
 // DB 保存
 
 export const handler: Handler = async (event, _context) => {
-  main({
+  return main({
     problemId: event.problemId,
     tmpDir: "/tmp",
     solverPath: path.join("target", "release", "cli"),
