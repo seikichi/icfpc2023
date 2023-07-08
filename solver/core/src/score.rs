@@ -147,13 +147,12 @@ fn line_circle_intersection(mut p1: Vec2, mut p2: Vec2, r: f32, center: Vec2) ->
 
 #[test]
 fn test_calculate() {
-    let input_path = "../../solver/problems/1.json";
+    let input_path = "../../solver/problems/42.json";
     let input = input::load_from_file(input_path.clone()).unwrap();
-    let solution_path = "../../solver/test_data/1.json";
+    let solution_path = "../../solver/test_data/42.json";
     let solution = output::load_from_file(solution_path.clone()).unwrap();
-    let score = calculate(&input, &solution);
-    // TODO
-    // assert!(score == 1234);
+    let score = calculate(&input, &solution).unwrap();
+    // assert!(score == 6736676);
 }
 
 #[test]
@@ -164,6 +163,7 @@ fn test_differential_calculator() {
 
     let current_solution = output::load_from_file(solution_path.clone()).unwrap();
     let current_score = calculate(&input, &current_solution).unwrap();
+    // assert!(current_score == 6736676);
 
     let mut dc = DifferentialCalculator::new(&input, &current_solution);
 
