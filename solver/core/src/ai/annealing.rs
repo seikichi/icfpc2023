@@ -73,7 +73,7 @@ impl ChainedAI for AnnealingAI {
                 solution = old_solution;
             }
 
-            if current_score < best_score {
+            if current_score > best_score {
                 best_score = current_score;
                 best_solution = solution.clone();
             }
