@@ -1,6 +1,7 @@
 pub mod geo;
 pub mod input;
 pub mod output;
+pub mod prune;
 pub mod score;
 
 use glam::Vec2;

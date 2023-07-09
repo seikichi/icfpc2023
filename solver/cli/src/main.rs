@@ -38,6 +38,9 @@ struct Opt {
     #[structopt(short = "Q", help = "disable debug and info log")]
     super_quiet: bool,
 
+    #[structopt(short = "p", default_value = "100.0", help = "prune threshold")]
+    prune_threshold: f32,
+
     #[structopt(long = "annealing-seconds", default_value = "10")]
     annealing_seconds: u64,
 }
@@ -101,7 +104,21 @@ pub fn run() -> anyhow::Result<()> {
 
     let problem_number = problem_id.parse::<i32>().unwrap();
 
-    let input = input::load_from_file(opt.input_path.clone(), problem_number)?;
+    let mut input = input::load_from_file(opt.input_path.clone(), problem_number)?;
+
+    let n_attendees_before_prune = input.attendees.len();
+    let pruned_attendees = prune::prune_attendees(
+        &input.attendees,
+        &input.room,
+        input.musicians.len(),
+        opt.prune_threshold,
+    );
+    input.attendees = pruned_attendees;
+    info!(
+        "attendees are pruned from {} to {}",
+        n_attendees_before_prune,
+        input.attendees.len()
+    );
 
     let mut solution = head_ai.solve(&input);
     let mut score_history = vec![];
