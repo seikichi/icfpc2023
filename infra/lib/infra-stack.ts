@@ -54,6 +54,7 @@ export class InfraStack extends cdk.Stack {
       environment: {
         DATABASE_URL: env.DATABASE_URL,
         SOLVER_LAMBDA_ARN: solver.functionArn,
+        COMMIT_ID: commitHash,
       },
     });
 

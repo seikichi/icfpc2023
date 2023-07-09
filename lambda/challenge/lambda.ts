@@ -22,6 +22,7 @@ type ChallengeEvent = z.infer<typeof ChallengeEvent>;
 const Env = z.object({
   DATABASE_URL: z.string().startsWith("mysql://"),
   SOLVER_LAMBDA_ARN: z.string().startsWith("arn:aws:lambda:"),
+  COMMIT_ID: z.string().min(1).max(40),
 });
 
 export const handler: Handler = async (event, _context) => {
@@ -39,6 +40,7 @@ export const handler: Handler = async (event, _context) => {
       score: 0,
       failed: 0,
       solved: 0,
+      commitId: env.COMMIT_ID,
     },
   });
 

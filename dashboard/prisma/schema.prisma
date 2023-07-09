@@ -76,8 +76,9 @@ model Challenge {
   tag String @db.VarChar(16)
 
   createdAt DateTime @default(now())
-  args      Json
+  args      String   @db.VarChar(64)
   score     Int
+  commitId  String   @db.VarChar(40)
 
   // 対象 (e.g., 1-10, 1,2,3)
   target String @db.VarChar(32)
@@ -89,4 +90,7 @@ model Challenge {
 
   solutions Solution[]
   failures  Failure[]
+
+  @@index([score])
+  @@index([createdAt])
 }
