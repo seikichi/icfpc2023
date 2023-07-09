@@ -1,4 +1,4 @@
-use glam::Vec2;
+use glam::{IVec2, Vec2};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Intersection {
@@ -242,4 +242,64 @@ fn test_distance_to_rectangle() {
         distance_to_rectangle(a, size, Vec2::new(3.0, -1.0)),
         f32::sqrt(2.0)
     );
+}
+
+// cf. https://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
+#[allow(dead_code)]
+fn draw_line(mut p0: Vec2, mut p1: Vec2, plot: impl Fn(IVec2)) {
+    let steep = (p1.y - p0.y).abs() > (p1.x - p0.x).abs();
+    if steep {
+        std::mem::swap(&mut p0.x, &mut p0.y);
+        std::mem::swap(&mut p1.x, &mut p1.y);
+    }
+    if p0.x > p1.x {
+        std::mem::swap(&mut p0, &mut p1);
+    }
+
+    let d = p1 - p0;
+    let gradient = if d.x.abs() < 1e-5 { 1.0 } else { d.y / d.x };
+
+    // handle first endpoint
+    let xend = p0.x.round();
+    let yend = p0.y + gradient * (xend - p0.x);
+    let xpxl1 = xend as i32;
+    let ypxl1 = yend.floor() as i32;
+    if steep {
+        plot(IVec2::new(ypxl1, xpxl1));
+        plot(IVec2::new(ypxl1 + 1, xpxl1));
+    } else {
+        plot(IVec2::new(xpxl1, ypxl1));
+        plot(IVec2::new(xpxl1, ypxl1 + 1));
+    }
+    let mut intery = yend + gradient; // first y-intersection for the main loop
+
+    // handle second endpoint
+    let xend = p1.x.round();
+    let yend = p1.y + gradient * (xend - p1.x);
+    let xpxl2 = xend as i32;
+    let ypxl2 = yend.floor() as i32;
+    if steep {
+        plot(IVec2::new(ypxl2, xpxl2));
+        plot(IVec2::new(ypxl2 + 1, xpxl2));
+    } else {
+        plot(IVec2::new(xpxl2, ypxl2));
+        plot(IVec2::new(xpxl2, ypxl2 + 1));
+    }
+
+    // main loop
+    if steep {
+        for x in (xpxl1 + 1)..=(xpxl2 - 1) {
+            let i = intery.floor() as i32;
+            plot(IVec2::new(i, x));
+            plot(IVec2::new(i + 1, x));
+            intery += gradient;
+        }
+    } else {
+        for x in (xpxl1 + 1)..=(xpxl2 - 1) {
+            let i = intery.floor() as i32;
+            plot(IVec2::new(x, i));
+            plot(IVec2::new(x, i + 1));
+            intery += gradient;
+        }
+    }
 }
