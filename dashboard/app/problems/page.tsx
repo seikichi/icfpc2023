@@ -29,6 +29,9 @@ export default async function Page() {
             <TableRow>
               <TableHeaderCell>Problem ID</TableHeaderCell>
               <TableHeaderCell>Thumbnail</TableHeaderCell>
+              <TableHeaderCell># of Musicians</TableHeaderCell>
+              <TableHeaderCell># of Attendees</TableHeaderCell>
+              <TableHeaderCell># of Pillars</TableHeaderCell>
               <TableHeaderCell className="text-right">Score</TableHeaderCell>
             </TableRow>
           </TableHead>
@@ -51,6 +54,10 @@ export default async function Page() {
                     />
                   </a>
                 </TableCell>
+                <TableCell className="text-right">{p.musicians}</TableCell>
+                <TableCell className="text-right">{p.attendees}</TableCell>
+                <TableCell className="text-right">{p.pillars}</TableCell>
+
                 <TableCell className="text-right">T.B.D.</TableCell>
               </TableRow>
             ))}
