@@ -64,9 +64,12 @@ export default function ChallengeDashboard(props: Props) {
     })();
   }, []);
 
-  const problems = parseProblemIds(props.challenge || { target: "" });
-  props.solutions.forEach((s) => problems.delete(s.problemId));
-  props.failures.forEach((f) => problems.delete(f.problemId));
+  const problemIds = parseProblemIds(props.challenge || { target: "" });
+  const successIds = props.solutions.map((s) => s.problemId);
+  const failureIds = props.failures.map((f) => f.problemId);
+  const noDataIds = Array.from(problemIds).filter(
+    (p) => !successIds.includes(p) && !failureIds.includes(p)
+  );
 
   return (
     <TabGroup className="mt-6">
@@ -218,7 +221,7 @@ export default function ChallengeDashboard(props: Props) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {Array.from(problems).map((p) => (
+                  {noDataIds.map((p) => (
                     <TableRow key={p}>
                       <TableCell className="text-left">
                         <Link href={`/problems/${p}`}>{p}</Link>
