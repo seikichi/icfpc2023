@@ -1,6 +1,7 @@
 import json
 import optuna
 import subprocess
+import os.path as op
 
 def objective(trial):
     temperature = trial.suggest_float("temperature", 10, 10000, log=True)
@@ -10,13 +11,13 @@ def objective(trial):
     multi = trial.suggest_int("multi", 0, 10)
 
     output = subprocess.check_output([
-        "..\\..\\solver\\target\\release\\cli",
+        op.join("..", "..", "solver", "target", "release", "cli"),
         "-a",
         "RandomPut,Annealing",
         "--annealing-initial-temperature",
         f"{temperature}",
         "-i",
-        "..\\..\\solver\\problems\\1.json",
+        op.join("..", "..", "solver", "problems", "8.json"),
          "-o",
          "tmp",
          "-Q",
@@ -32,7 +33,7 @@ def objective(trial):
     return json.loads(output)['score']
 
 study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=40)
+study.optimize(objective, n_trials=50)
 
 best_params = study.best_params
 found_temperature = best_params["temperature"]

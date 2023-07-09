@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "hp_opt"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.7"
 optuna = "^3.2.0"
 
 
