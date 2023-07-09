@@ -1,15 +1,13 @@
+use log::debug;
+
 use crate::*;
 
-pub fn prune_attendees(
-    attendees: &[Attendee],
-    room: &Room,
-    n_musician: usize,
-    threshold: f32,
-) -> Vec<Attendee> {
+pub fn prune_attendees(attendees: &[Attendee], room: &Room, threshold: f32) -> Vec<Attendee> {
     let mut pruned = vec![];
     for attendee in attendees {
         let importance = attendee_importance(attendee, room);
-        if importance * n_musician as f32 >= threshold {
+        debug!("attendance_importance = {}", importance);
+        if importance >= threshold {
             pruned.push(attendee.clone());
         }
     }
@@ -25,5 +23,5 @@ fn attendee_importance(attendee: &Attendee, room: &Room) -> f32 {
         .map(|t| t.abs())
         .max_by(|a, b| a.total_cmp(b))
         .unwrap_or(0.0);
-    max_abs_taste / (distance_to_stage * distance_to_stage)
+    1_000_000.0 * max_abs_taste / (distance_to_stage * distance_to_stage)
 }

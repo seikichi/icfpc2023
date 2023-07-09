@@ -38,7 +38,7 @@ struct Opt {
     #[structopt(short = "Q", help = "disable debug and info log")]
     super_quiet: bool,
 
-    #[structopt(short = "p", default_value = "100.0", help = "prune threshold")]
+    #[structopt(short = "p", default_value = "500.0", help = "prune threshold")]
     prune_threshold: f32,
 
     #[structopt(long = "annealing-seconds", default_value = "10")]
@@ -107,12 +107,8 @@ pub fn run() -> anyhow::Result<()> {
     let mut input = input::load_from_file(opt.input_path.clone(), problem_number)?;
 
     let n_attendees_before_prune = input.attendees.len();
-    let pruned_attendees = prune::prune_attendees(
-        &input.attendees,
-        &input.room,
-        input.musicians.len(),
-        opt.prune_threshold,
-    );
+    let pruned_attendees =
+        prune::prune_attendees(&input.attendees, &input.room, opt.prune_threshold);
     input.attendees = pruned_attendees;
     info!(
         "attendees are pruned from {} to {}",
