@@ -20,6 +20,7 @@ export default function Invoke() {
     reset();
     console.log(params);
     await invokeChallenge(params);
+    alert("💸💸💸💸💸");
   };
 
   return (

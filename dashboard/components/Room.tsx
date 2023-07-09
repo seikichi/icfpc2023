@@ -9,13 +9,14 @@ const MAX_CANVAS_SIZE = 1000;
 
 export type RoomtComponentProps = {
   problemId: number;
+  solution: Solution | null;
+  setSolution: (solution: Solution | null) => void;
 };
 
 export default function RoomtComponent(props: RoomtComponentProps) {
-  const problemId = props.problemId;
+  const { problemId, solution, setSolution } = props;
 
   const [room, setRoom] = useState<Room | null>(null);
-  const [solution, setSolution] = useState<Solution | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

@@ -26,7 +26,6 @@ type Props = {
 };
 
 export default function ChallengeDashboard(props: Props) {
-  // なんとここで lib/actions.ts の関数が呼べます...
   const handleDownloadClick = useCallback((key: string) => {
     (async () => {
       try {
@@ -90,7 +89,7 @@ export default function ChallengeDashboard(props: Props) {
                   {props.solutions.map((s) => (
                     <TableRow key={s.id}>
                       <TableCell>
-                        <Link href={`/problem/${s.problemId}`}>
+                        <Link href={`/problems/${s.problemId}`}>
                           {s.problemId}
                         </Link>
                       </TableCell>
@@ -154,7 +153,7 @@ export default function ChallengeDashboard(props: Props) {
                   {props.failures.map((f) => (
                     <TableRow key={f.id}>
                       <TableCell>
-                        <Link href={`/problem/${f.problemId}`}>
+                        <Link href={`/problems/${f.problemId}`}>
                           {f.problemId}
                         </Link>
                       </TableCell>

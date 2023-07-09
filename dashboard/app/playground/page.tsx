@@ -1,6 +1,6 @@
 import { Title } from "@tremor/react";
 import Invoke from "@/components/Invoke";
-import Room from "@/components/Room";
+import ProblemVisualizer from "@/components/ProblemVisualizer";
 
 // export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export default async function Page() {
       <Title>実験場</Title>
 
       <Invoke />
-      <Room problemId={42}/>
+      <ProblemVisualizer problemId={42} solutions={[]} />
     </main>
   );
 }
