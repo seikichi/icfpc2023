@@ -316,8 +316,8 @@ fn circle_tangent_points_simple(a: f32, b: f32, r: f32) -> (Vec2, Vec2) {
     }
 
     if b.abs() < 1e-5 {
-        let x = r * r / a;
-        let y = r * (1.0 - r * r / (a * a)).sqrt();
+        let x = r2 / a;
+        let y = r * (1.0 - r2 / a2).sqrt();
         return (Vec2::new(x, y), Vec2::new(x, -y));
     }
 
