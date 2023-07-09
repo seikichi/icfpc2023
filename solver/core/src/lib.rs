@@ -8,7 +8,7 @@ use glam::Vec2;
 
 pub type Instrument = i32;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, serde::Deserialize)]
 pub struct Room {
     pub size: Vec2,
     pub stage_pos: Vec2,

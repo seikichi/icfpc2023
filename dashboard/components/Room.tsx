@@ -3,7 +3,7 @@
 import { Room, Solution } from "@/lib/schema";
 import { Card, Title, Flex, Button, Text } from "@tremor/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import wasm, { calculate, calculate_score_of_a_musician } from "wasm";
+import wasm, { calculate, calculate_score_of_a_musician, attendee_importance } from "wasm";
 
 const MAX_CANVAS_SIZE = 1000;
 
@@ -22,6 +22,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
 
   const [score, setScore] = useState<number | null>(null);
   const [musician_scores, setMusiciansScores] = useState<number[] | null>(null);
+  const [attendee_importances, setAttendeeImportances] = useState<number[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -50,8 +51,10 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       });
       try {
         await wasm();
+
         const score = calculate(room_str, solution_str, problemId);
         setScore(Number(score));
+
         const musician_scores = room.musicians.map((_, i) => {
           const score_of_a_musician = calculate_score_of_a_musician(
             room_str,
@@ -68,6 +71,17 @@ export default function RoomtComponent(props: RoomtComponentProps) {
           })
         );
         setMusiciansScores(musician_scores);
+
+        const room_str_ = JSON.stringify({
+          size: [room.room_width, room.room_height],
+          stage_pos: room.stage_bottom_left,
+          stage_size: [room.stage_width, room.stage_height],
+        });
+        const attendee_importances = room.attendees.map((attendee, i) => {
+          const attendee_str = JSON.stringify(attendee);
+          return attendee_importance(attendee_str, room_str_);
+        });
+        setAttendeeImportances(attendee_importances);
       } catch (e) {
         alert(JSON.stringify(e));
       }
@@ -120,12 +134,21 @@ export default function RoomtComponent(props: RoomtComponentProps) {
     const [stage_x, stage_y] = room.stage_bottom_left;
     ctx.fillRect(stage_x, stage_y, room.stage_width, room.stage_height);
 
-    ctx.fillStyle = "red";
-    for (const { x, y } of room.attendees) {
+    room.attendees.forEach(({ x, y }, i) => {
+      if (attendee_importances === null) {
+        ctx.fillStyle = "red";
+      } else {
+        const color = mapValueToColor(
+          attendee_importances[i],
+          Math.min(...attendee_importances),
+          Math.max(...attendee_importances)
+        );
+        ctx.fillStyle = color;
+      }
       const circle = new Path2D();
       circle.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.fill(circle);
-    }
+    });
 
     ctx.fillStyle = "black";
     if (room.pillars) {
