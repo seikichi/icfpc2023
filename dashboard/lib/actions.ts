@@ -10,3 +10,12 @@ export async function invokeSolver() {
   const result = await client.send(command);
   return JSON.parse(Buffer.from(result.Payload!).toString("utf-8"));
 }
+
+export async function generateSolutionUrl(
+  bucketKey: string
+): Promise<{ url: string }> {
+  // TODO
+  // aws の s3 の client を使って bucketKey からいい感じに URL を生成して返そう
+  console.log(env.BUCKET);
+  return { url: "https://example.com" };
+}

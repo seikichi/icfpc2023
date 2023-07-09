@@ -1,7 +1,7 @@
 import Room from "@/components/Room";
 import { Title } from "@tremor/react";
 
-// export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function Page({ params }: { params: { id: string } }) {
   return (
@@ -9,6 +9,8 @@ export default async function Page({ params }: { params: { id: string } }) {
       <Title>Problem: {params.id}</Title>
 
       <Room problemId={parseInt(params.id, 10)} />
+
+      {/* <ProblemSolutionList solutions={solutions} /> */}
     </main>
   );
 }
