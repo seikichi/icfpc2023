@@ -16,7 +16,6 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "wasm": "file:../solver/wasm/pkg",
     "@aws-sdk/client-lambda": "^3.363.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",
@@ -27,6 +26,7 @@
     "@types/react-dom": "18.2.6",
     "autoprefixer": "10.4.14",
     "aws-crt": "^1.15.20",
+    "aws-sdk": "^2.1413.0",
     "eslint": "8.44.0",
     "eslint-config-next": "13.4.8",
     "next": "13.4.8",
@@ -39,6 +39,7 @@
     "tailwindcss": "3.3.2",
     "ts-node": "^10.9.1",
     "typescript": "5.1.6",
+    "wasm": "file:../solver/wasm/pkg",
     "zod": "^3.21.4"
   },
   "engines": {
