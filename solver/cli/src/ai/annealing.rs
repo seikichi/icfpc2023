@@ -10,6 +10,10 @@ use std::time::{Duration, Instant};
 
 pub struct AnnealingAI {
     pub time_limit: Duration,
+    pub initial_temperature: f64,
+    pub swap_ratio: f32,
+    pub move_ratio: f32,
+    pub multi_move_ratio: f32,
 }
 
 impl ChainedAI for AnnealingAI {
@@ -28,8 +32,7 @@ impl ChainedAI for AnnealingAI {
         let mut best_solution = solution.clone();
         let mut best_score = current_score;
 
-        let initial_temperature = 100.0;
-        let mut temperature = initial_temperature;
+        let mut temperature = self.initial_temperature;
 
         let mut valid_solution_count = 0;
         let mut invalid_solution_count = 0;
@@ -73,7 +76,7 @@ impl ChainedAI for AnnealingAI {
 
                 // tweak temperature
                 let progress = elapsed.as_secs_f64() / self.time_limit.as_secs_f64();
-                temperature = initial_temperature * (1.0 - progress) * (-progress).exp2();
+                temperature = self.initial_temperature * (1.0 - progress) * (-progress).exp2();
             }
 
             // 後でロールバックできるように解を保存しておく
@@ -83,68 +86,62 @@ impl ChainedAI for AnnealingAI {
 
             // move to neighbor
             // let n_methods = 2;
-            let method_r = rng.gen::<u32>() % 100;
-            let new_score = match method_r {
-                0..=30 => {
-                    // 0. swap する
-                    let mut k1 = rng.gen::<usize>() % musicians.len();
-                    let mut k2 = rng.gen::<usize>() % musicians.len();
-                    while k1 == k2 {
-                        k1 = rng.gen::<usize>() % musicians.len();
-                        k2 = rng.gen::<usize>() % musicians.len();
-                    }
-                    if musicians[k1].instrument == musicians[k2].instrument {
-                        continue;
-                    }
-                    let new_score = score_calc.swap(input, &mut solution, k1, k2);
-                    new_score
+            let method_r =
+                rng.gen::<f32>() * (self.swap_ratio + self.move_ratio + self.multi_move_ratio);
+            let new_score = if method_r < self.swap_ratio {
+                // 0. swap する
+                let mut k1 = rng.gen::<usize>() % musicians.len();
+                let mut k2 = rng.gen::<usize>() % musicians.len();
+                while k1 == k2 {
+                    k1 = rng.gen::<usize>() % musicians.len();
+                    k2 = rng.gen::<usize>() % musicians.len();
                 }
-                31..=90 => {
-                    // 1. 適当な musician を少し動かす
-                    // 動かす範囲は温度によって徐々に狭める
-                    let max_delta: f32 = stage_size.x.max(stage_size.y)
-                        * 0.1
-                        * (temperature / initial_temperature) as f32;
-                    let k = rng.gen::<usize>() % musicians.len();
-                    let delta = rng.gen::<f32>() * max_delta;
-                    let angle = rng.gen::<f32>() * 2.0 * PI;
-                    let v = delta * Vec2::new(angle.cos(), angle.sin());
-                    let mut p = solution.placements[k] + v;
-                    p.x = p.x.max(stage_pos.x + 10.0);
-                    p.y = p.y.max(stage_pos.y + 10.0);
-                    p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
-                    p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
-                    let new_score = score_calc.move_one(input, &mut solution, k, p);
-                    new_score
+                if musicians[k1].instrument == musicians[k2].instrument {
+                    continue;
                 }
-                91..=100 => {
-                    // 適当な musician を少し動かす
-                    // 他の musician に当たった場合はその musician も動かす
-                    let max_delta: f32 = stage_size.x.max(stage_size.y)
-                        * 0.1
-                        * (temperature / initial_temperature) as f32;
-                    let k = rng.gen::<usize>() % musicians.len();
-                    let delta = rng.gen::<f32>() * max_delta;
-                    // 4方向のみ
-                    let dir = rng.gen::<usize>() % 4;
-                    let dx = [delta, 0.0, -delta, 0.0][dir];
-                    let dy = [0.0, delta, 0.0, -delta][dir];
-                    let v = delta * Vec2::new(dx, dy);
-                    let new_score;
-                    if let Some(s) = multi_move(input, &mut solution, &mut score_calc, k, v) {
-                        new_score = s;
-                        // println!("valid move!: {} {:?} ", k, v);
-                        // println!("score: {} -> {}", current_score, new_score);
-                    } else {
-                        // println!("invalid move!: {} {:?} ", k, v);
-                        solution.placements = vec![];
-                        new_score = -1 * (1 << 50);
-                    }
-                    new_score
+                let new_score = score_calc.swap(input, &mut solution, k1, k2);
+                new_score
+            } else if method_r < self.swap_ratio + self.move_ratio {
+                // 1. 適当な musician を少し動かす
+                // 動かす範囲は温度によって徐々に狭める
+                let max_delta: f32 = stage_size.x.max(stage_size.y)
+                    * 0.1
+                    * (temperature / self.initial_temperature) as f32;
+                let k = rng.gen::<usize>() % musicians.len();
+                let delta = rng.gen::<f32>() * max_delta;
+                let angle = rng.gen::<f32>() * 2.0 * PI;
+                let v = delta * Vec2::new(angle.cos(), angle.sin());
+                let mut p = solution.placements[k] + v;
+                p.x = p.x.max(stage_pos.x + 10.0);
+                p.y = p.y.max(stage_pos.y + 10.0);
+                p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
+                p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
+                let new_score = score_calc.move_one(input, &mut solution, k, p);
+                new_score
+            } else {
+                // 2. 適当な musician を少し動かす
+                // 他の musician に当たった場合はその musician も動かす
+                let max_delta: f32 = stage_size.x.max(stage_size.y)
+                    * 0.1
+                    * (temperature / self.initial_temperature) as f32;
+                let k = rng.gen::<usize>() % musicians.len();
+                let delta = rng.gen::<f32>() * max_delta;
+                // 4方向のみ
+                let dir = rng.gen::<usize>() % 4;
+                let dx = [delta, 0.0, -delta, 0.0][dir];
+                let dy = [0.0, delta, 0.0, -delta][dir];
+                let v = delta * Vec2::new(dx, dy);
+                let new_score;
+                if let Some(s) = multi_move(input, &mut solution, &mut score_calc, k, v) {
+                    new_score = s;
+                    // println!("valid move!: {} {:?} ", k, v);
+                    // println!("score: {} -> {}", current_score, new_score);
+                } else {
+                    // println!("invalid move!: {} {:?} ", k, v);
+                    solution.placements = vec![];
+                    new_score = -1 * (1 << 50);
                 }
-                _ => {
-                    panic!("no such method: {method_r}")
-                }
+                new_score
             };
 
             let is_valid_solution = score::validate_solution(input, &solution).is_ok();

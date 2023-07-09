@@ -43,6 +43,18 @@ struct Opt {
 
     #[structopt(long = "annealing-seconds", default_value = "10")]
     annealing_seconds: u64,
+
+    #[structopt(long = "annealing-initial-temperature", default_value = "1000.0")]
+    annealing_initial_temperature: f64,
+
+    #[structopt(long = "annealing-swap-ratio", default_value = "30.0")]
+    annealing_swap_ratio: f32,
+
+    #[structopt(long = "annealing-move-ratio", default_value = "60.0")]
+    annealing_move_ratio: f32,
+
+    #[structopt(long = "annealing-multi-move-ratio", default_value = "10.0")]
+    annealing_multi_move_ratio: f32,
 }
 
 // 標準出力に JSON 形式で出力し、Lambda の JS が DB に書き込む
@@ -67,6 +79,10 @@ fn parse_ai_string(
         let chained_ai: Box<dyn ai::ChainedAI> = match *name {
             "Annealing" => Box::new(ai::AnnealingAI {
                 time_limit: Duration::from_secs(opt.annealing_seconds),
+                initial_temperature: opt.annealing_initial_temperature,
+                swap_ratio: opt.annealing_swap_ratio,
+                move_ratio: opt.annealing_move_ratio,
+                multi_move_ratio: opt.annealing_multi_move_ratio,
             }),
             "GreedMove" => Box::new(ai::GreedMoveAI {}),
             x => bail!("'{x}' is not a ChainedAI"),
