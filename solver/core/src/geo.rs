@@ -332,10 +332,10 @@ fn circle_tangent_points_simple(a: f32, b: f32, r: f32) -> (Vec2, Vec2) {
 // p から center を中心とする半径rの円に接線を引いたときの接点を求める。
 // p は円の内部(円周を含む)に存在してはならない。
 // 戻り値となる２つの接点 t1, t2 は、p--t1--t2 が counter clockwise となるように返す。
-#[allow(dead_code)]
-fn circle_tangent_points(center: Vec2, r: f32, mut p: Vec2) -> (Vec2, Vec2) {
+pub fn circle_tangent_points(center: Vec2, r: f32, mut p: Vec2) -> (Vec2, Vec2) {
     p -= center;
     let (mut t1, mut t2) = circle_tangent_points_simple(p.x, p.y, r);
+    p += center;
     t1 += center;
     t2 += center;
     if ccw(p, t1, t2) < 0 {
@@ -378,6 +378,9 @@ pub fn ccw(a: Vec2, mut b: Vec2, mut c: Vec2) -> i32 {
 // 半直線 a--b と a--c によって囲まれたコーン状の領域に点xが存在するかどうかを返す。
 // a--b--c は counter clockwise でなければならない。
 pub fn in_cone(a: Vec2, b: Vec2, c: Vec2, x: Vec2) -> Intersection {
+    #[cfg(debug_assertions)]
+    assert_eq!(ccw(a, b, c), 1);
+
     let ccw1 = ccw(a, b, x);
     if ccw1 == -2 {
         return Intersection::Tagent;
@@ -411,4 +414,15 @@ fn test_in_cone() {
     assert_eq!(in_cone(a, b, c, v(2.0, 0.0)), Intersection::Tagent);
     assert_eq!(in_cone(a, b, c, v(2.0, 2.0)), Intersection::Tagent);
     assert_eq!(in_cone(a, b, c, v(0.0, 0.0)), Intersection::None);
+}
+
+#[test]
+fn test_in_cone2() {
+    let v = |x, y| Vec2::new(x, y);
+    let a = v(60.0, 10.0);
+    let b = v(40.0, 20.0);
+    let c = v(40.0, 0.0);
+    assert_eq!(ccw(a, b, c), 1);
+    assert_eq!(ccw(a, b, v(10.0, 10.0)), 1);
+    assert_eq!(in_cone(a, b, c, v(10.0, 10.0)), Intersection::Hit);
 }
