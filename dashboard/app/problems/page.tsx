@@ -31,16 +31,15 @@ export default async function Page() {
     .then((r) =>
       r.forEach((s) => (bestSolutionsLocal[s.problemId] = s._max.score || 0))
     );
-  const bestSolutionsOfficial: { [problemId: number]: number } = {};
-  (
-    await fetch("https://api.icfpcontest.com/userboard", {
-      headers: {
-        Authorization: `Bearer ${env.API_TOKEN}`,
-      },
-    }).then((r) => r.json())
-  ).Success.problems.forEach(
-    (p: number, i: number) => (bestSolutionsOfficial[i + 1] = p)
-  );
+  const res = await fetch("https://api.icfpcontest.com/userboard", {
+    headers: {
+      Authorization: `Bearer ${env.API_TOKEN}`,
+    },
+    // cache: "no-store",
+  });
+  const text = await res.text();
+  console.log(text);
+  const problemScores = JSON.parse(text).Success.problems;
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
@@ -89,7 +88,7 @@ export default async function Page() {
                   {bestSolutionsLocal[p.id]}
                 </TableCell>
                 <TableCell className="text-right">
-                  {bestSolutionsOfficial[p.id]}
+                  {problemScores[p.id - 1]}
                 </TableCell>
               </TableRow>
             ))}
