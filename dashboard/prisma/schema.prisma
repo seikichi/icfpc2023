@@ -80,7 +80,7 @@ model Challenge {
   tag String @db.VarChar(16)
 
   createdAt DateTime @default(now())
-  args      String   @db.VarChar(64)
+  args      String   @db.VarChar(256)
   score     BigInt
   commitId  String   @db.VarChar(40)
 
