@@ -1,6 +1,6 @@
 "use client";
 
-import { Challenge } from "@prisma/client";
+import { Failure, Solution } from "@prisma/client";
 import {
   Tab,
   TabList,
@@ -18,70 +18,130 @@ import {
 import Link from "next/link";
 
 type Props = {
-  bestChallenges: readonly Challenge[];
-  recentChallenges: readonly Challenge[];
+  solutions: readonly Solution[];
+  failures: readonly Failure[];
 };
-
-function ChallengeTable({ challenges }: { challenges: readonly Challenge[] }) {
-  return (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableHeaderCell>ID</TableHeaderCell>
-          <TableHeaderCell className="text-right">Tag</TableHeaderCell>
-          <TableHeaderCell className="text-right">Args</TableHeaderCell>
-          <TableHeaderCell className="text-right">CreatedAt</TableHeaderCell>
-          <TableHeaderCell className="text-right">Commit ID</TableHeaderCell>
-          <TableHeaderCell className="text-right">Target</TableHeaderCell>
-          <TableHeaderCell className="text-right">Solved</TableHeaderCell>
-          <TableHeaderCell className="text-right">Failed</TableHeaderCell>
-          <TableHeaderCell className="text-right">Score</TableHeaderCell>
-        </TableRow>
-      </TableHead>
-
-      <TableBody>
-        {challenges.map((c) => (
-          <TableRow key={c.id}>
-            <TableCell>
-              <Link href={`/challenges/${c.id}`}>{c.id}</Link>
-            </TableCell>
-            <TableCell className="text-right">{c.tag}</TableCell>
-            <TableCell className="text-left">{c.args}</TableCell>
-            <TableCell className="text-right">
-              {c.createdAt.toISOString()}
-            </TableCell>
-            <TableCell className="text-right">{c.commitId}</TableCell>
-            <TableCell className="text-right">{c.target}</TableCell>
-            <TableCell className="text-right">{c.solved}</TableCell>
-            <TableCell className="text-right">{c.failed}</TableCell>
-
-            <TableCell className="text-right">{Number(c.score)}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
 
 export default function ChallengeDashboard(props: Props) {
   return (
     <TabGroup className="mt-6">
       <TabList>
-        <Tab>Best</Tab>
-        <Tab>Recent</Tab>
+        <Tab>Success</Tab>
+        <Tab>Failure</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
           <div className="mt-6">
             <Card>
-              <ChallengeTable challenges={props.bestChallenges} />
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell className="text-right">
+                      Problem ID
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Score
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Args
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Elapsed (sec)
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Commit ID
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Key
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Created At
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Submission ID
+                    </TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {props.solutions.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell>
+                        <Link href={`/problem/${s.problemId}`}>
+                          {s.problemId}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-right">{s.score}</TableCell>
+                      <TableCell className="text-left">{s.args}</TableCell>
+                      <TableCell className="text-right">
+                        {s.elapsedSec}
+                      </TableCell>
+                      <TableCell className="text-right">{s.commitId}</TableCell>
+                      <TableCell className="text-right">
+                        {s.bucketKey}
+                      </TableCell>
+
+                      <TableCell className="text-left">
+                        {s.createdAt.toISOString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {JSON.parse(s.submissionId || "")}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Card>
           </div>
         </TabPanel>
         <TabPanel>
           <div className="mt-6">
             <Card>
-              <ChallengeTable challenges={props.recentChallenges} />
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeaderCell className="text-right">
+                      Problem ID
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Error
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Args
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Elapsed (sec)
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Commit ID
+                    </TableHeaderCell>
+                    <TableHeaderCell className="text-right">
+                      Created At
+                    </TableHeaderCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {props.failures.map((f) => (
+                    <TableRow key={f.id}>
+                      <TableCell>
+                        <Link href={`/problem/${f.problemId}`}>
+                          {f.problemId}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-right">{f.error}</TableCell>
+                      <TableCell className="text-left">{f.args}</TableCell>
+                      <TableCell className="text-right">
+                        {f.elapsedSec}
+                      </TableCell>
+                      <TableCell className="text-right">{f.commitId}</TableCell>
+                      <TableCell className="text-left">
+                        {f.createdAt.toISOString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </Card>
           </div>
         </TabPanel>

@@ -1,4 +1,4 @@
-import ChallengeDashboard from "@/components/ChallengeDashboard";
+import ChallengeListDashboard from "@/components/ChallengeListDashboard";
 import { prisma } from "@/lib/db";
 import { Title, Text } from "@tremor/react";
 
@@ -20,7 +20,7 @@ export default async function Page() {
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       <Title>Dashboard</Title>
       <Text>Lorem ipsum dolor sit amet, consetetur sadipscing elitr.</Text>
-      <ChallengeDashboard
+      <ChallengeListDashboard
         bestChallenges={bestChallenges}
         recentChallenges={recentChallenges}
       />
