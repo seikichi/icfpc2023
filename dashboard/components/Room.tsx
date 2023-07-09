@@ -72,7 +72,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
         alert(JSON.stringify(e));
       }
     })();
-  }, [room, solution]);
+  }, [room, solution, problemId]);
 
   function mapValueToColor(value: number, min: number, max: number) {
     let r, g, b;
@@ -188,7 +188,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       };
       reader.readAsText(file);
     },
-    []
+    [setSolution]
   );
 
   return (

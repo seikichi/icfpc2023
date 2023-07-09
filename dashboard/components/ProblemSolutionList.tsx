@@ -22,20 +22,24 @@ type Props = {
 };
 
 export default function ProblemSolutionList(props: Props) {
-  const handleSelectSolutionClick = useCallback((key: string) => {
-    (async () => {
-      try {
-        const { url } = await generateSolutionUrl(key);
-        const response = await fetch(url, { mode: "cors" });
-        if (!response.ok) {
-          throw new Error(response.statusText);
+  const { setSolution } = props;
+  const handleSelectSolutionClick = useCallback(
+    (key: string) => {
+      (async () => {
+        try {
+          const { url } = await generateSolutionUrl(key);
+          const response = await fetch(url, { mode: "cors" });
+          if (!response.ok) {
+            throw new Error(response.statusText);
+          }
+          setSolution(Solution.parse(await response.json()));
+        } catch (e) {
+          alert(JSON.stringify(e));
         }
-        props.setSolution(Solution.parse(await response.json()));
-      } catch (e) {
-        alert(JSON.stringify(e));
-      }
-    })();
-  }, []);
+      })();
+    },
+    [setSolution]
+  );
 
   return (
     <Card>
