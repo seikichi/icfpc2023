@@ -1,10 +1,3 @@
-// node-camvas
-// ts-node
-// node-fetch
-// fs で読み込む
-// 90回canvasを回す
-// dashboard / public / problems / 1.png
-
 import { createCanvas, Canvas, DOMMatrix } from 'canvas'
 import * as fs from 'fs';
 
