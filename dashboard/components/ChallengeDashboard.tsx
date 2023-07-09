@@ -26,7 +26,6 @@ type Props = {
 };
 
 export default function ChallengeDashboard(props: Props) {
-  // なんとここで lib/actions.ts の関数が呼べます...
   const handleDownloadClick = useCallback((key: string) => {
     (async () => {
       try {
