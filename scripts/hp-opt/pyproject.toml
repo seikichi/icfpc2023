@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "hp-opt"
+version = "0.1.0"
+description = ""
+authors = ["Seikichi KONDO <seikichi@kmc.gr.jp>"]
+readme = "README.md"
+packages = [{include = "hp_opt"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+optuna = "^3.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
