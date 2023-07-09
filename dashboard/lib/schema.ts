@@ -8,6 +8,7 @@ export const Env = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_DEFAULT_REGION: z.string().min(1),
   SOLVER_LAMBDA_ARN: z.string().startsWith("arn:aws:lambda:"),
+  CHALLENGE_LAMBDA_ARN: z.string().startsWith("arn:aws:lambda:"),
   BUCKET: z.string().min(1),
 });
 
@@ -51,3 +52,19 @@ export const Solution = z.object({
 });
 
 export type Solution = z.infer<typeof Solution>;
+
+export const SubmitParams = z.object({
+  tag: z
+    .string()
+    .min(1)
+    .max(16)
+    .regex(/^[a-zA-Z0-9\-]*$/),
+  args: z.string().min(1).max(64),
+  target: z
+    .string()
+    .min(1)
+    .max(32)
+    .regex(/^([1-9][0-9]*(-[1-9][0-9]*)?)(,([1-9][0-9]*(-[1-9][0-9]*)?))*$/),
+});
+
+export type SubmitParams = z.infer<typeof SubmitParams>;

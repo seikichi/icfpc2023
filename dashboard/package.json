@@ -16,10 +16,10 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "wasm": "file:../solver/wasm/pkg",
     "@aws-sdk/client-lambda": "^3.363.0",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",
+    "@hookform/resolvers": "^3.1.1",
     "@prisma/client": "^4.16.2",
     "@tremor/react": "^3.4.1",
     "@types/node": "20.3.3",
@@ -39,6 +39,7 @@
     "tailwindcss": "3.3.2",
     "ts-node": "^10.9.1",
     "typescript": "5.1.6",
+    "wasm": "file:../solver/wasm/pkg",
     "zod": "^3.21.4"
   },
   "engines": {

@@ -1,6 +1,7 @@
 import ChallengeListDashboard from "@/components/ChallengeListDashboard";
+import ChallengeSubmit from "@/components/ChallengeSubmit";
 import { prisma } from "@/lib/db";
-import { Title, Text } from "@tremor/react";
+import { Title } from "@tremor/react";
 
 export const revalidate = 60;
 
@@ -18,8 +19,8 @@ export default async function Page() {
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      <Title>Dashboard</Title>
-      <Text>Lorem ipsum dolor sit amet, consetetur sadipscing elitr.</Text>
+      <Title>Challenges</Title>
+      <ChallengeSubmit />
       <ChallengeListDashboard
         bestChallenges={bestChallenges}
         recentChallenges={recentChallenges}
