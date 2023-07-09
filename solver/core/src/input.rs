@@ -78,3 +78,15 @@ pub fn load_from_str(s: &str, problem_number: i32) -> io::Result<Input> {
         version,
     })
 }
+
+pub fn load_attendee(attendee_json: &str) -> io::Result<Attendee> {
+    let raw_attendee: RawAttendee = serde_json::from_str(attendee_json)?;
+    Ok(Attendee {
+        pos: Vec2::new(raw_attendee.x, raw_attendee.y),
+        tastes: raw_attendee.tastes,
+    })
+}
+
+pub fn load_room(room_json: &str) -> io::Result<Room> {
+    Ok(serde_json::from_str(room_json)?)
+}

@@ -17,7 +17,6 @@ datasource db {
 model Problem {
   id Int @id
 
-  bestScore Int @default(0)
   musicians Int @default(0)
   pillars   Int @default(0)
   attendees Int @default(0)
@@ -34,7 +33,7 @@ model Solution {
 
   createdAt  DateTime @default(now())
   problemId  Int
-  score      Int
+  score      BigInt
   commitId   String   @db.VarChar(40)
   args       String   @db.VarChar(256)
   bucketKey  String   @db.VarChar(48)

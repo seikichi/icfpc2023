@@ -47,6 +47,16 @@ pub fn calculate_score_of_a_musician(
 }
 
 #[wasm_bindgen]
+pub fn attendee_importance(attendee_json: &str, room_json: &str) -> f32 {
+    utils::set_panic_hook();
+
+    let attendee = core::input::load_attendee(attendee_json).unwrap();
+    let room = core::input::load_room(room_json).unwrap();
+
+    core::prune::attendee_importance(&attendee, &room)
+}
+
+#[wasm_bindgen]
 pub fn greet(name: &str) {
     alert(&format!("Hello, {}!", name));
 }
