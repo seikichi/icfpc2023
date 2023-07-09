@@ -2,6 +2,9 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import fetch from "node-fetch";
 import { z } from "zod";
+import * as wasm from "wasm";
+import * as fs from "fs/promises";
+import * as path from "path";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +32,15 @@ const SubmissionResponse = z.union([
   }),
 ]);
 
+const SubmissionContents = z.object({
+  placements: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .array(),
+});
+
 // 1. 対象を取ってくる
 // 2. submit 結果を見る
 // 3. wasm で score 計算
@@ -39,6 +51,8 @@ const NUM_PROBLEMS = 90;
 const MAX_RECORD_PER_SOLUTION = 5;
 
 (async () => {
+  let warned: number[] = [];
+
   for (let problemId = 1; problemId <= NUM_PROBLEMS; problemId++) {
     console.log(`re-submit: problem_id = ${problemId}`);
 
@@ -83,7 +97,68 @@ const MAX_RECORD_PER_SOLUTION = 5;
         continue;
       }
 
-      console.log(result.Success.submission.score.Success);
+      const contents = SubmissionContents.parse(
+        JSON.parse(result.Success.contents)
+      );
+
+      let total = 0;
+      let volumes: number[] = [];
+      for (let i = 0; i < contents.placements.length; i++) {
+        const input = await fs.readFile(
+          path.join("..", "..", "solver", "problems", `${problemId}.json`),
+          { encoding: "utf-8" }
+        );
+        const scores = wasm.calculate_score_of_a_musician(
+          input,
+          result.Success.contents,
+          problemId,
+          i
+        );
+
+        let score = 0;
+        for (const s of scores) {
+          score += Number(s);
+        }
+        if (i % 200 === 0) {
+          console.log(`  ${i} / ${contents.placements.length} musicians`);
+        }
+
+        total += score;
+        volumes.push(score > 0 ? 10.0 : 0.0);
+      }
+
+      console.log("calc by wasm", total);
+      console.log(`official`, result.Success.submission.score.Success);
+
+      const diff = Math.abs(total - result.Success.submission.score.Success);
+      if (
+        diff >= 0.01 * total ||
+        diff >= 0.01 * result.Success.submission.score.Success
+      ) {
+        console.log(`warning: big diff!!!!!!!!`);
+        warned.push(problemId);
+      }
+
+      const r = await fetch(`https://api.icfpcontest.com/submission`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problem_id: problemId,
+          contents: JSON.stringify({
+            ...contents,
+            volumes,
+          }),
+        }),
+      });
+
+      if (!r.ok) {
+        throw await r.text();
+      }
+
+      console.log(await r.text());
       break;
     }
   }
