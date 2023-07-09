@@ -83,9 +83,9 @@ impl ChainedAI for AnnealingAI {
 
             // move to neighbor
             // let n_methods = 2;
-            let method_r = rng.gen::<u32>() % 10;
+            let method_r = rng.gen::<u32>() % 100;
             let new_score = match method_r {
-                0..=3 => {
+                0..=30 => {
                     // 0. swap する
                     let mut k1 = rng.gen::<usize>() % musicians.len();
                     let mut k2 = rng.gen::<usize>() % musicians.len();
@@ -99,7 +99,7 @@ impl ChainedAI for AnnealingAI {
                     let new_score = score_calc.swap(input, &mut solution, k1, k2);
                     new_score
                 }
-                4..=10 => {
+                31..=95 => {
                     // 1. 適当な musician を少し動かす
                     // 動かす範囲は温度によって徐々に狭める
                     let max_delta: f32 = stage_size.x.max(stage_size.y)
@@ -115,6 +115,31 @@ impl ChainedAI for AnnealingAI {
                     p.x = p.x.min(stage_pos.x + stage_size.x - 10.0);
                     p.y = p.y.min(stage_pos.y + stage_size.y - 10.0);
                     let new_score = score_calc.move_one(input, &mut solution, k, p);
+                    new_score
+                }
+                96..=100 => {
+                    let max_delta: f32 = stage_size.x.max(stage_size.y)
+                        * 0.1
+                        * (temperature / initial_temperature) as f32;
+                    let k = rng.gen::<usize>() % musicians.len();
+                    let delta = rng.gen::<f32>() * max_delta;
+                    // 4方向のみ
+                    let dir = rng.gen::<usize>() % 4;
+                    let dx = [delta, 0.0, -delta, 0.0][dir];
+                    let dy = [0.0, delta, 0.0, -delta][dir];
+                    let v = delta * Vec2::new(dx, dy);
+                    let new_score;
+                    if let Some(next_solution) = multi_move(input, &solution, k, v) {
+                        solution = next_solution;
+                        score_calc = score::DifferentialCalculator::new(input, &solution);
+                        new_score = score::calculate(input, &solution).unwrap_or(-1 * (1 << 50));
+                        // println!("valid move!: {} {:?} ", k, v);
+                        // println!("score: {} -> {}", current_score, new_score);
+                    } else {
+                        // println!("invalid move!: {} {:?} ", k, v);
+                        solution.placements = vec![];
+                        new_score = -1 * (1 << 50);
+                    }
                     new_score
                 }
                 _ => {
@@ -172,4 +197,45 @@ impl ChainedAI for AnnealingAI {
             }
         }
     }
+}
+
+// musician を動かした後にぶつかったmusiciansも同じ方向に動かす
+fn multi_move(
+    input: &Input,
+    current_solution: &Solution,
+    target: usize,
+    vect: Vec2,
+) -> Option<Solution> {
+    let stage_pos1 = input.room.stage_pos;
+    let stage_size = input.room.stage_size;
+    let stage_pos2 = stage_pos1 + stage_size;
+    let mut solution = current_solution.clone();
+    let mut stack = vec![target];
+    let mut visited = vec![false; solution.placements.len()];
+    visited[target] = true;
+    let mut cnt = 0;
+    while let Some(from) = stack.pop() {
+        cnt += 1;
+        solution.placements[from] += vect;
+        let p1 = solution.placements[from];
+        let valid_x = stage_pos1.x + 10.0 <= p1.x && p1.x <= stage_pos2.x - 10.0;
+        let valid_y = stage_pos1.y + 10.0 <= p1.y && p1.y <= stage_pos2.y - 10.0;
+        if !valid_x || !valid_y {
+            return None;
+        }
+        for to in 0..solution.placements.len() {
+            let p2 = solution.placements[to];
+            if from == to || visited[to] || p1.distance_squared(p2) > 100.0 {
+                continue;
+            }
+            stack.push(to);
+            visited[to] = true;
+        }
+    }
+    if cnt <= 3 {
+        // 余り動かしてない場合は無視
+        return None;
+    }
+    // println!("move count!: {}", cnt);
+    return Some(solution);
 }
