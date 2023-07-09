@@ -1,6 +1,6 @@
 import ChallengeDashboard from "@/components/ChallengeDashboard";
 import { prisma } from "@/lib/db";
-import { Title } from "@tremor/react";
+import { Card, Title } from "@tremor/react";
 
 export const revalidate = 60;
 
@@ -14,12 +14,14 @@ export default async function Page({ params }: { params: { id: string } }) {
     where: { challengeId },
     orderBy: { problemId: "asc" },
   });
+  const challenge = await prisma.challenge.findUnique({
+    where: { id: challengeId },
+  });
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       <Title>Challenge: {params.id}</Title>
-
-      <ChallengeDashboard solutions={solutions} failures={failures} />
+      <ChallengeDashboard challenge={challenge} solutions={solutions} failures={failures} />
     </main>
   );
 }
