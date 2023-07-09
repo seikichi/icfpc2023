@@ -1,5 +1,6 @@
 "use client";
 
+import { generateSolutionUrl } from "@/lib/actions";
 import { Failure, Solution } from "@prisma/client";
 import {
   Tab,
@@ -14,8 +15,10 @@ import {
   TableHead,
   TableHeaderCell,
   TableBody,
+  Button,
 } from "@tremor/react";
 import Link from "next/link";
+import { useCallback } from "react";
 
 type Props = {
   solutions: readonly Solution[];
@@ -23,6 +26,26 @@ type Props = {
 };
 
 export default function ChallengeDashboard(props: Props) {
+  // なんとここで lib/actions.ts の関数が呼べます...
+  const handleDownloadClick = useCallback((key: string) => {
+    (async () => {
+      try {
+        const { url } = await generateSolutionUrl(key);
+
+        const link = document.createElement("a");
+        try {
+          link.href = url;
+          link.setAttribute("target", "_blank");
+          document.body.appendChild(link);
+          link.click();
+        } finally {
+          link.parentNode?.removeChild(link);
+        }
+      } catch (e) {
+        alert(JSON.stringify(e));
+      }
+    })();
+  }, []);
   return (
     <TabGroup className="mt-6">
       <TabList>
@@ -52,7 +75,7 @@ export default function ChallengeDashboard(props: Props) {
                       Commit ID
                     </TableHeaderCell>
                     <TableHeaderCell className="text-right">
-                      Key
+                      Solution
                     </TableHeaderCell>
                     <TableHeaderCell className="text-right">
                       Created At
@@ -78,7 +101,13 @@ export default function ChallengeDashboard(props: Props) {
                       </TableCell>
                       <TableCell className="text-right">{s.commitId}</TableCell>
                       <TableCell className="text-right">
-                        {s.bucketKey}
+                        <Button
+                          size="xs"
+                          variant="secondary"
+                          onClick={() => handleDownloadClick(s.bucketKey)}
+                        >
+                          Download
+                        </Button>
                       </TableCell>
 
                       <TableCell className="text-left">

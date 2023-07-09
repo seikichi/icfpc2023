@@ -8,6 +8,7 @@ export const Env = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().min(1),
   AWS_DEFAULT_REGION: z.string().min(1),
   SOLVER_LAMBDA_ARN: z.string().startsWith("arn:aws:lambda:"),
+  BUCKET: z.string().min(1),
 });
 
 export type Env = z.infer<typeof Env>;
@@ -27,10 +28,14 @@ export const Room = z.object({
     })
     .array()
     .min(1),
-  pillars: z.object({
-    center: z.tuple([z.number().min(0), z.number().min(0)]),
-    radius: z.number().min(0),
-  }).array().min(0).optional(),
+  pillars: z
+    .object({
+      center: z.tuple([z.number().min(0), z.number().min(0)]),
+      radius: z.number().min(0),
+    })
+    .array()
+    .min(0)
+    .optional(),
 });
 
 export type Room = z.infer<typeof Room>;

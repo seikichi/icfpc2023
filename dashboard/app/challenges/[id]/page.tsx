@@ -2,7 +2,7 @@ import ChallengeDashboard from "@/components/ChallengeDashboard";
 import { prisma } from "@/lib/db";
 import { Title } from "@tremor/react";
 
-export const revalidate = 600;
+export const revalidate = 60;
 
 export default async function Page({ params }: { params: { id: string } }) {
   const challengeId = parseInt(params.id, 10);
