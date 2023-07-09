@@ -9,6 +9,7 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
+    "db:check": "ts-node prisma/check.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
