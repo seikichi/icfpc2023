@@ -77,7 +77,7 @@ model Challenge {
 
   createdAt DateTime @default(now())
   args      String   @db.VarChar(64)
-  score     Int
+  score     BigInt
   commitId  String   @db.VarChar(40)
 
   // 対象 (e.g., 1-10, 1,2,3)
