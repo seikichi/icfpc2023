@@ -1,5 +1,3 @@
-use core::panic;
-
 use glam::Vec2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
