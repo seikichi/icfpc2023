@@ -139,11 +139,11 @@ pub fn run() -> anyhow::Result<()> {
 
     let mut solution = head_ai.solve(&pruned_input);
     let mut score_history = vec![];
-    score_history.push(score::calculate(&original_input, &solution).unwrap());
+    score_history.push(score::calculate_with_volume(&original_input, &solution).unwrap());
 
     for mut chained_ai in chained_ais {
         solution = chained_ai.solve(&pruned_input, &solution);
-        score_history.push(score::calculate(&original_input, &solution).unwrap());
+        score_history.push(score::calculate_with_volume(&original_input, &solution).unwrap());
     }
 
     info!("Score History:");

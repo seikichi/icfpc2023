@@ -22,6 +22,24 @@ pub fn calculate(input: &input::Input, solution: &Solution) -> Option<i64> {
     Some(score.max(0))
 }
 
+pub fn calculate_with_volume(input: &input::Input, solution: &Solution) -> Option<i64> {
+    match validate_solution(input, solution) {
+        Ok(()) => {}
+        Err(_) => {
+            return None;
+        }
+    }
+
+    let musicians = &input.musicians;
+    let mut score: i64 = 0;
+    for k in 0..musicians.len() {
+        let score_k = calculate_score_of_a_musician(input, solution, k);
+        let score_sum = score_k.iter().sum::<i64>();
+        score += if score_sum > 0 { score_sum * 10 } else { 0 };
+    }
+    Some(score.max(0))
+}
+
 // k番目の musician に関するスコアを返す。
 // 戻り値は配列であり、i番目の値はi番目の客からkが得るスコアである。
 pub fn calculate_score_of_a_musician(
