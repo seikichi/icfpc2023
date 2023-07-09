@@ -331,11 +331,17 @@ fn circle_tangent_points_simple(a: f32, b: f32, r: f32) -> (Vec2, Vec2) {
 
 // p から center を中心とする半径rの円に接線を引いたときの接点を求める。
 // p は円の内部(円周を含む)に存在してはならない。
+// 戻り値となる２つの接点 t1, t2 は、p--t1--t2 が counter clockwise となるように返す。
 #[allow(dead_code)]
 fn circle_tangent_points(center: Vec2, r: f32, mut p: Vec2) -> (Vec2, Vec2) {
     p -= center;
-    let (t1, t2) = circle_tangent_points_simple(p.x, p.y, r);
-    (t1 + center, t2 + center)
+    let (mut t1, mut t2) = circle_tangent_points_simple(p.x, p.y, r);
+    t1 += center;
+    t2 += center;
+    if ccw(p, t1, t2) < 0 {
+        std::mem::swap(&mut t1, &mut t2);
+    }
+    (t1, t2)
 }
 
 #[test]
@@ -344,4 +350,47 @@ fn test_circle_tangent_points() {
         circle_tangent_points(Vec2::ZERO, 2.0, Vec2::new(2.0, 4.0)),
         (Vec2::new(-6.0 / 5.0, 8.0 / 5.0), Vec2::new(2.0, 0.0))
     );
+}
+
+pub fn cross(a: Vec2, b: Vec2) -> f32 {
+    a.x * b.y - a.y * b.x
+}
+
+pub fn ccw(a: Vec2, mut b: Vec2, mut c: Vec2) -> i32 {
+    b -= a;
+    c -= a;
+    let x = cross(b, c);
+    if x > 1e-5 {
+        return 1; // counter clockwise
+    }
+    if x < -1e-5 {
+        return -1; // clockwise
+    }
+    if b.dot(c) < 0.0 {
+        return 2; // c--a--b on line
+    }
+    if b.dot(b) < c.dot(c) {
+        return -2; // a--b--c on line
+    }
+    0
+}
+
+// 半直線 a--b と a--c によって囲まれたコーン状の領域に点xが存在するかどうかを返す。
+// a--b--c は counter clockwise でなければならない。
+pub fn in_cone(a: Vec2, b: Vec2, c: Vec2, x: Vec2) -> Intersection {
+    let ccw1 = ccw(a, b, x);
+    if ccw1 == -2 {
+        return Intersection::Tagent;
+    }
+    if ccw1 != 1 {
+        return Intersection::None;
+    }
+    let ccw2 = ccw(a, c, x);
+    if ccw2 == -2 {
+        return Intersection::Tagent;
+    }
+    if ccw2 != -1 {
+        return Intersection::None;
+    }
+    Intersection::Hit
 }
