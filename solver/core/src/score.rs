@@ -367,9 +367,17 @@ impl DifferentialCalculator {
                 continue;
             }
             let p1 = current_solution.placements[k_];
+            // 距離が近すぎる場合: これは不正な状態だが、処理しないとパニックするので特別扱いする
+            if current_k_pos.distance_squared(p1) <= 5.0 * 5.0 {
+                for i in 0..attendees.len() {
+                    self.n_occlusion[k_][i] -= 1;
+                }
+                continue;
+            }
+            let (t1, t2) = circle_tangent_points(current_k_pos, 5.0, p1);
             for i in 0..attendees.len() {
                 let p2 = attendees[i].pos;
-                let intersection = segment_circle_intersection(p1, p2, 5.0, current_k_pos);
+                let intersection = in_cone(p1, t1, t2, p2);
                 match intersection {
                     Intersection::Hit => {
                         self.n_occlusion[k_][i] -= 1;
@@ -388,9 +396,17 @@ impl DifferentialCalculator {
                 continue;
             }
             let p1 = current_solution.placements[k_];
+            // 距離が近すぎる場合: これは不正な状態だが、処理しないとパニックするので特別扱いする
+            if new_k_pos.distance_squared(p1) <= 5.0 * 5.0 {
+                for i in 0..attendees.len() {
+                    self.n_occlusion[k_][i] -= 1;
+                }
+                continue;
+            }
+            let (t1, t2) = circle_tangent_points(new_k_pos, 5.0, p1);
             for i in 0..attendees.len() {
                 let p2 = attendees[i].pos;
-                let intersection = segment_circle_intersection(p1, p2, 5.0, new_k_pos);
+                let intersection = in_cone(p1, t1, t2, p2);
                 match intersection {
                     Intersection::Hit => {
                         self.n_occlusion[k_][i] += 1;
