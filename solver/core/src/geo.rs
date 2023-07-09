@@ -1,3 +1,5 @@
+use core::panic;
+
 use glam::Vec2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -190,5 +192,56 @@ fn test_intersect_rectangle() {
             Vec2::new(1.0, 1.1)
         ),
         false
+    );
+}
+
+// a を左下の点、size をサイズとする矩形と点 p の間の距離を返す。
+// p は矩形の外部になければならない。
+pub fn distance_to_rectangle(a: Vec2, size: Vec2, p: Vec2) -> f32 {
+    let contains_x = a.x <= p.x && p.x <= a.x + size.x;
+    let contains_y = a.y <= p.y && p.y <= a.y + size.y;
+    if contains_x && contains_y {
+        panic!("p must be out size of rectangle");
+    }
+    if contains_x {
+        let d1 = (p.y - a.y).abs();
+        let d2 = (p.y - (a.y + size.y)).abs();
+        return d1.min(d2);
+    }
+    if contains_y {
+        let d1 = (p.x - a.x).abs();
+        let d2 = (p.x - (a.x + size.x)).abs();
+        return d1.min(d2);
+    }
+    let d1 = p.distance(a);
+    let d2 = p.distance(a + Vec2::new(size.x, 0.0));
+    let d3 = p.distance(a + Vec2::new(0.0, size.y));
+    let d4 = p.distance(a + Vec2::new(size.x, size.y));
+    d1.min(d2).min(d3).min(d4)
+}
+
+#[test]
+fn test_distance_to_rectangle() {
+    let a = Vec2::new(1.0, 0.0);
+    let size = Vec2::new(1.0, 2.0);
+    assert_eq!(
+        distance_to_rectangle(a, size, Vec2::new(0.5, 2.5)),
+        f32::sqrt(2.0) / 2.0
+    );
+    assert_eq!(distance_to_rectangle(a, size, Vec2::new(1.5, 3.0)), 1.0);
+    assert_eq!(
+        distance_to_rectangle(a, size, Vec2::new(3.0, 3.0)),
+        f32::sqrt(2.0)
+    );
+    assert_eq!(distance_to_rectangle(a, size, Vec2::new(0.0, 0.5)), 1.0);
+    assert_eq!(distance_to_rectangle(a, size, Vec2::new(3.0, 1.0)), 1.0);
+    assert_eq!(
+        distance_to_rectangle(a, size, Vec2::new(0.0, -1.0)),
+        f32::sqrt(2.0)
+    );
+    assert_eq!(distance_to_rectangle(a, size, Vec2::new(1.5, -1.0)), 1.0);
+    assert_eq!(
+        distance_to_rectangle(a, size, Vec2::new(3.0, -1.0)),
+        f32::sqrt(2.0)
     );
 }
