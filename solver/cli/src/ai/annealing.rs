@@ -99,7 +99,7 @@ impl ChainedAI for AnnealingAI {
                     let new_score = score_calc.swap(input, &mut solution, k1, k2);
                     new_score
                 }
-                31..=95 => {
+                31..=90 => {
                     // 1. 適当な musician を少し動かす
                     // 動かす範囲は温度によって徐々に狭める
                     let max_delta: f32 = stage_size.x.max(stage_size.y)
@@ -117,7 +117,9 @@ impl ChainedAI for AnnealingAI {
                     let new_score = score_calc.move_one(input, &mut solution, k, p);
                     new_score
                 }
-                96..=100 => {
+                91..=100 => {
+                    // 適当な musician を少し動かす
+                    // 他の musician に当たった場合はその musician も動かす
                     let max_delta: f32 = stage_size.x.max(stage_size.y)
                         * 0.1
                         * (temperature / initial_temperature) as f32;
@@ -129,10 +131,8 @@ impl ChainedAI for AnnealingAI {
                     let dy = [0.0, delta, 0.0, -delta][dir];
                     let v = delta * Vec2::new(dx, dy);
                     let new_score;
-                    if let Some(next_solution) = multi_move(input, &solution, k, v) {
-                        solution = next_solution;
-                        score_calc = score::DifferentialCalculator::new(input, &solution);
-                        new_score = score::calculate(input, &solution).unwrap_or(-1 * (1 << 50));
+                    if let Some(s) = multi_move(input, &mut solution, &mut score_calc, k, v) {
+                        new_score = s;
                         // println!("valid move!: {} {:?} ", k, v);
                         // println!("score: {} -> {}", current_score, new_score);
                     } else {
@@ -202,22 +202,21 @@ impl ChainedAI for AnnealingAI {
 // musician を動かした後にぶつかったmusiciansも同じ方向に動かす
 fn multi_move(
     input: &Input,
-    current_solution: &Solution,
+    solution: &mut Solution,
+    score_calc: &mut score::DifferentialCalculator,
     target: usize,
     vect: Vec2,
-) -> Option<Solution> {
+) -> Option<i64> {
     let stage_pos1 = input.room.stage_pos;
     let stage_size = input.room.stage_size;
     let stage_pos2 = stage_pos1 + stage_size;
-    let mut solution = current_solution.clone();
     let mut stack = vec![target];
     let mut visited = vec![false; solution.placements.len()];
     visited[target] = true;
-    let mut cnt = 0;
+    // let mut cnt = 0;
     while let Some(from) = stack.pop() {
-        cnt += 1;
-        solution.placements[from] += vect;
-        let p1 = solution.placements[from];
+        // cnt += 1;
+        let p1 = solution.placements[from] + vect;
         let valid_x = stage_pos1.x + 10.0 <= p1.x && p1.x <= stage_pos2.x - 10.0;
         let valid_y = stage_pos1.y + 10.0 <= p1.y && p1.y <= stage_pos2.y - 10.0;
         if !valid_x || !valid_y {
@@ -232,10 +231,14 @@ fn multi_move(
             visited[to] = true;
         }
     }
-    if cnt <= 3 {
-        // 余り動かしてない場合は無視
-        return None;
+    let mut score = 0;
+    for k in 0..solution.placements.len() {
+        if !visited[k] {
+            continue;
+        }
+        let p = solution.placements[k] + vect;
+        score = score_calc.move_one(input, solution, k, p);
     }
     // println!("move count!: {}", cnt);
-    return Some(solution);
+    return Some(score);
 }
