@@ -303,3 +303,45 @@ fn draw_line(mut p0: Vec2, mut p1: Vec2, plot: impl Fn(IVec2)) {
         }
     }
 }
+
+// 点(a, b)から原点を中心とする半径rの円に接線を引いたときの接点を求める。
+// 点(a, b) は円の内部(円周を含む)に存在してはならない。
+fn circle_tangent_points_simple(a: f32, b: f32, r: f32) -> (Vec2, Vec2) {
+    let a2 = a * a;
+    let b2 = b * b;
+    let r2 = r * r;
+    let c2 = a2 + b2;
+    if c2 <= r2 {
+        panic!("(a, b) must be outside of circle: a={a}, b={b}, r={r}");
+    }
+
+    if b.abs() < 1e-5 {
+        let x = r * r / a;
+        let y = r * (1.0 - r * r / (a * a)).sqrt();
+        return (Vec2::new(x, y), Vec2::new(x, -y));
+    }
+
+    let d = (b2 * r2 * (c2 - r2)).sqrt();
+    let x1 = (a * r2 - d) / c2;
+    let x2 = (a * r2 + d) / c2;
+    let y1 = (b2 * r2 + a * d) / (b * c2);
+    let y2 = (b2 * r2 - a * d) / (b * c2);
+    (Vec2::new(x1, y1), Vec2::new(x2, y2))
+}
+
+// p から center を中心とする半径rの円に接線を引いたときの接点を求める。
+// p は円の内部(円周を含む)に存在してはならない。
+#[allow(dead_code)]
+fn circle_tangent_points(center: Vec2, r: f32, mut p: Vec2) -> (Vec2, Vec2) {
+    p -= center;
+    let (t1, t2) = circle_tangent_points_simple(p.x, p.y, r);
+    (t1 + center, t2 + center)
+}
+
+#[test]
+fn test_circle_tangent_points() {
+    assert_eq!(
+        circle_tangent_points(Vec2::ZERO, 2.0, Vec2::new(2.0, 4.0)),
+        (Vec2::new(-6.0 / 5.0, 8.0 / 5.0), Vec2::new(2.0, 0.0))
+    );
+}
