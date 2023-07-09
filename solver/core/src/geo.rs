@@ -394,3 +394,21 @@ pub fn in_cone(a: Vec2, b: Vec2, c: Vec2, x: Vec2) -> Intersection {
     }
     Intersection::Hit
 }
+
+#[test]
+fn test_in_cone() {
+    let v = |x, y| Vec2::new(x, y);
+    let a = v(0.0, 0.0);
+    let b = v(1.0, 0.0);
+    let c = v(1.0, 1.0);
+    assert_eq!(in_cone(a, b, c, v(1.0, 0.5)), Intersection::Hit);
+    assert_eq!(in_cone(a, b, c, v(2.0, 1.5)), Intersection::Hit);
+    assert_eq!(in_cone(a, b, c, v(1.0, 1.5)), Intersection::None);
+    assert_eq!(in_cone(a, b, c, v(1.0, -0.1)), Intersection::None);
+    assert_eq!(in_cone(a, b, c, v(-1.0, -0.5)), Intersection::None);
+    assert_eq!(in_cone(a, b, c, v(-1.0, 1.0)), Intersection::None);
+    assert_eq!(in_cone(a, b, c, v(1.0, -1.0)), Intersection::None);
+    assert_eq!(in_cone(a, b, c, v(2.0, 0.0)), Intersection::Tagent);
+    assert_eq!(in_cone(a, b, c, v(2.0, 2.0)), Intersection::Tagent);
+    assert_eq!(in_cone(a, b, c, v(0.0, 0.0)), Intersection::None);
+}
