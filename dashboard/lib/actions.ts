@@ -9,6 +9,8 @@ import {
 import { env } from "@/lib/env";
 import { SubmitParams } from "./schema";
 
+import AWS from "aws-sdk";
+
 export async function invokeSolver() {
   const client = new LambdaClient({ region: env.AWS_DEFAULT_REGION });
   const command = new InvokeCommand({ FunctionName: env.SOLVER_LAMBDA_ARN });
@@ -29,8 +31,18 @@ export async function invokeChallenge(params: SubmitParams) {
 export async function generateSolutionUrl(
   bucketKey: string
 ): Promise<{ url: string }> {
-  // TODO
-  // aws の s3 の client を使って bucketKey からいい感じに URL を生成して返そう
-  console.log(env.BUCKET);
-  return { url: "https://example.com" };
-}
+  const s3 = new AWS.S3();
+  const params = {
+    Bucket: env.BUCKET,
+    Key: bucketKey,
+    Expires: 60 * 60 * 24,
+    ResponseContentDisposition: `attachment; filename="solution_${bucketKey}.json"`
+  };
+  try {
+    const url = await s3.getSignedUrlPromise("getObject", params);
+    return { url };
+  } catch (err) {
+    console.log(err);
+    return { url: "" };
+  }
+};

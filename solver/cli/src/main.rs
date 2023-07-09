@@ -104,25 +104,29 @@ pub fn run() -> anyhow::Result<()> {
 
     let problem_number = problem_id.parse::<i32>().unwrap();
 
-    let mut input = input::load_from_file(opt.input_path.clone(), problem_number)?;
+    let original_input = input::load_from_file(opt.input_path.clone(), problem_number)?;
 
-    let n_attendees_before_prune = input.attendees.len();
-    let pruned_attendees =
-        prune::prune_attendees(&input.attendees, &input.room, opt.prune_threshold);
-    input.attendees = pruned_attendees;
+    // prune attendees
+    let pruned_attendees = prune::prune_attendees(
+        &original_input.attendees,
+        &original_input.room,
+        opt.prune_threshold,
+    );
+    let mut pruned_input = original_input.clone();
+    pruned_input.attendees = pruned_attendees;
     info!(
         "attendees are pruned from {} to {}",
-        n_attendees_before_prune,
-        input.attendees.len()
+        original_input.attendees.len(),
+        pruned_input.attendees.len()
     );
 
-    let mut solution = head_ai.solve(&input);
+    let mut solution = head_ai.solve(&pruned_input);
     let mut score_history = vec![];
-    score_history.push(score::calculate(&input, &solution).unwrap());
+    score_history.push(score::calculate(&original_input, &solution).unwrap());
 
     for mut chained_ai in chained_ais {
-        solution = chained_ai.solve(&input, &solution);
-        score_history.push(score::calculate(&input, &solution).unwrap());
+        solution = chained_ai.solve(&pruned_input, &solution);
+        score_history.push(score::calculate(&original_input, &solution).unwrap());
     }
 
     info!("Score History:");
