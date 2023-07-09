@@ -2,6 +2,7 @@ use glam::Vec2;
 
 use crate::{input, Solution};
 use core::geo::*;
+// use core::score::validate_solution;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -16,28 +17,76 @@ impl HeadAI for GridGreedAI {
         let mut best_placements = vec![];
         let musicians: &Vec<core::Musican> = &input.musicians;
         let attendees = &input.attendees;
-        for iter in 0..4 {
+        let l = input.room.stage_pos.x + 10.0;
+        let r = input.room.stage_pos.x + input.room.stage_size.x - 10.0;
+        let t = input.room.stage_pos.y + 10.0;
+        let b = input.room.stage_pos.y + input.room.stage_size.y - 10.0;
+        let max_iter = if input.version == 1 && input.attendees.len() > 1000 {
+            4
+        } else {
+            12
+        };
+        for iter in 0..max_iter {
             let mut candidates = vec![];
             // グリッド状における位置の列挙
-            let l = input.room.stage_pos.x;
-            let r = l + input.room.stage_size.x;
-            let t = input.room.stage_pos.y;
-            let b = t + input.room.stage_size.y;
-            let sx = [l, l, r, r][iter];
-            let sy = [t, b, t, b][iter];
-            let dx = [10.0, 10.0, -10.0, -10.0][iter];
-            let dy = [10.0, -10.0, 10.0, -10.0][iter];
+            let sx = [l, l, r, r, l, l, r, r, l, l, r, r][iter];
+            let sy = [t, b, t, b, t, b, t, b, t, b, t, b][iter];
+            let hex_offset = 5.0 * 1.733;
+            let dx = [
+                10.0,
+                10.0,
+                -10.0,
+                -10.0,
+                hex_offset,
+                hex_offset,
+                -hex_offset,
+                -hex_offset,
+                10.0,
+                10.0,
+                -10.0,
+                -10.0,
+            ][iter];
+            let dy = [
+                10.0,
+                -10.0,
+                10.0,
+                -10.0,
+                10.0,
+                -10.0,
+                10.0,
+                -10.0,
+                hex_offset,
+                -hex_offset,
+                hex_offset,
+                -hex_offset,
+            ][iter];
             for i in 0..10000 {
-                let y = sy + dy * ((i + 1) as f32);
-                if y < t + 10.0 || b - 10.0 < y {
+                let y = sy + dy * (i as f32);
+                if y < t || b < y {
                     break;
                 }
                 for j in 0..10000 {
-                    let x = sx + dx * ((j + 1) as f32);
-                    if x < l + 10.0 || r - 10.0 < x {
+                    let x = sx + dx * (j as f32);
+                    let xoffset = if 8 <= iter && iter < 12 && i % 2 == 1 {
+                        dx * 0.5
+                    } else {
+                        0.0
+                    };
+                    if x + xoffset < l || r < x + xoffset {
                         break;
                     }
-                    candidates.push(Vec2 { x, y });
+                    let yoffset = if 4 <= iter && iter < 8 && j % 2 == 1 {
+                        dy * 0.5
+                    } else {
+                        0.0
+                    };
+                    if y + yoffset < t || b < y + yoffset {
+                        continue;
+                    }
+                    candidates.push(Vec2 {
+                        x: x + xoffset,
+                        y: y + yoffset,
+                    });
                 }
             }
             let sampling_num = candidates.len().min(10000.max(musicians.len() * 10));
@@ -102,6 +151,15 @@ impl HeadAI for GridGreedAI {
                 candidates_used[i] = true;
                 placements[k] = candidates[i];
             }
+            // let solution = Solution {
+            //     placements: placements.clone(),
+            // };
+            // println!("{}", hex_offset);
+            // println!("{:?}", placements);
+            // println!("{:?} {:?}", placements[0], placements[21]);
+            // println!("{:?}", (placements[0] - placements[21]).length());
+            // println!("{:?}", validate_solution(input, &solution));
+            // assert!(validate_solution(input, &solution).is_ok());
             if sum_score > best_score {
                 best_placements = placements;
                 best_score = sum_score;
