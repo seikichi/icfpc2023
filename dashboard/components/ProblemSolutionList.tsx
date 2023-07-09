@@ -71,7 +71,7 @@ export default function ProblemSolutionList(props: Props) {
                   {s.challengeId}
                 </Link>
               </TableCell>
-              <TableCell className="text-right">{s.score}</TableCell>
+              <TableCell className="text-right">{Number(s.score)}</TableCell>
               <TableCell className="text-left">{s.args}</TableCell>
               <TableCell className="text-right">{s.elapsedSec}</TableCell>
               <TableCell className="text-right">{s.commitId}</TableCell>

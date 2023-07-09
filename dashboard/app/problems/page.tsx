@@ -19,7 +19,7 @@ export const revalidate = 600;
 
 export default async function Page() {
   const problems = await prisma.problem.findMany();
-  const bestSolutionsLocal: { [problemId: number]: number } = {};
+  const bestSolutionsLocal: { [problemId: number]: bigint } = {};
   await prisma.solution
     .groupBy({
       by: ["problemId"],
@@ -29,7 +29,9 @@ export default async function Page() {
       orderBy: { problemId: "asc" },
     })
     .then((r) =>
-      r.forEach((s) => (bestSolutionsLocal[s.problemId] = s._max.score || 0))
+      r.forEach(
+        (s) => (bestSolutionsLocal[s.problemId] = s._max.score || BigInt(0))
+      )
     );
   const res = await fetch("https://api.icfpcontest.com/userboard", {
     headers: {
@@ -83,7 +85,7 @@ export default async function Page() {
                 <TableCell className="text-right">{p.attendees}</TableCell>
                 <TableCell className="text-right">{p.pillars}</TableCell>
                 <TableCell className="text-right">
-                  {bestSolutionsLocal[p.id]}
+                  {Number(bestSolutionsLocal[p.id])}
                 </TableCell>
                 <TableCell className="text-right">
                   {problemScores[p.id - 1]}

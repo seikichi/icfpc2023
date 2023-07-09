@@ -120,7 +120,9 @@ export default function ChallengeDashboard(props: Props) {
                           {s.problemId}
                         </Link>
                       </TableCell>
-                      <TableCell className="text-right">{s.score}</TableCell>
+                      <TableCell className="text-right">
+                        {Number(s.score)}
+                      </TableCell>
                       <TableCell className="text-left">{s.args}</TableCell>
                       <TableCell className="text-right">
                         {s.elapsedSec}
