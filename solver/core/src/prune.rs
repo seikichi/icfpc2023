@@ -14,7 +14,7 @@ pub fn prune_attendees(attendees: &[Attendee], room: &Room, threshold: f32) -> V
     pruned
 }
 
-fn attendee_importance(attendee: &Attendee, room: &Room) -> f32 {
+pub fn attendee_importance(attendee: &Attendee, room: &Room) -> f32 {
     let distance_to_stage =
         geo::distance_to_rectangle(room.stage_pos, room.stage_size, attendee.pos);
     let max_abs_taste = attendee

@@ -10,6 +10,7 @@ export const Env = z.object({
   SOLVER_LAMBDA_ARN: z.string().startsWith("arn:aws:lambda:"),
   CHALLENGE_LAMBDA_ARN: z.string().startsWith("arn:aws:lambda:"),
   BUCKET: z.string().min(1),
+  API_TOKEN: z.string().min(1),
 });
 
 export type Env = z.infer<typeof Env>;

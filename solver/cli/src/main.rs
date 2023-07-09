@@ -71,6 +71,7 @@ fn parse_ai_string(
     let head_ai: Box<dyn ai::HeadAI> = match parts[0] {
         "Grid" => Box::new(ai::GridAI {}),
         "GridGreed" => Box::new(ai::GridGreedAI {}),
+        "RingSide" => Box::new(ai::RingSideAI {}),
         "RandomPut" => Box::new(ai::RandomPutAI {}),
         x => bail!("'{x}' is not a HeadAI"),
     };
