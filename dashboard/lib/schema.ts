@@ -59,7 +59,7 @@ export const SubmitParams = z.object({
     .min(1)
     .max(16)
     .regex(/^[a-zA-Z0-9\-]*$/),
-  args: z.string().min(1).max(64),
+  args: z.string().min(1).max(256),
   target: z
     .string()
     .min(1)

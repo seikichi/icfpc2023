@@ -13,7 +13,7 @@ const prisma = new PrismaClient();
 
 const ChallengeEvent = z.object({
   tag: z.string().max(16),
-  args: z.string().max(64),
+  args: z.string().max(256),
   target: z.string().min(1).max(32),
 });
 

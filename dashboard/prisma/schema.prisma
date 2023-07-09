@@ -17,7 +17,11 @@ datasource db {
 model Problem {
   id Int @id
 
-  bestScore Int        @default(0)
+  bestScore Int @default(0)
+  musicians Int @default(0)
+  pillars   Int @default(0)
+  attendees Int @default(0)
+
   solutions Solution[]
   failures  Failure[]
 }
@@ -32,7 +36,7 @@ model Solution {
   problemId  Int
   score      Int
   commitId   String   @db.VarChar(40)
-  args       String   @db.VarChar(64)
+  args       String   @db.VarChar(256)
   bucketKey  String   @db.VarChar(48)
   elapsedSec Int
 
@@ -57,7 +61,7 @@ model Failure {
   createdAt  DateTime @default(now())
   problemId  Int
   commitId   String   @db.VarChar(40)
-  args       String   @db.VarChar(64)
+  args       String   @db.VarChar(256)
   elapsedSec Int
 
   problem   Problem    @relation(fields: [problemId], references: [id])
