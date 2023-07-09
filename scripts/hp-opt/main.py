@@ -48,7 +48,7 @@ study = optuna.create_study(direction="maximize",
                             storage=f"sqlite:///study-{problem_id}.db",
                             load_if_exists=True)
 
-study.optimize(objective, n_trials=200)
+study.optimize(objective, n_trials=600)
 
 best_params = study.best_params
 found_temperature = best_params["temperature"]
