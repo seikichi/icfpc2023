@@ -17,7 +17,7 @@ datasource db {
 model Problem {
   id Int @id
 
-  // bestScore Int
+  bestScore Int        @default(0)
   solutions Solution[]
   failures  Failure[]
 }
