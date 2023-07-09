@@ -3,8 +3,11 @@ import optuna
 import subprocess
 import os.path as op
 import shutil
+import sys
 
 problem_id = 8
+
+outdir = sys.argv[len(sys.argv) - 1]
 
 def objective(trial):
     p = trial.suggest_int("p", 50, 500000, log=True)
@@ -23,7 +26,7 @@ def objective(trial):
         "-i",
         op.join("..", "..", "solver", "problems", f"{problem_id}.json"),
          "-o",
-         "tmp",
+         outdir,
          "-Q",
          "--annealing-seconds",
          "60",
