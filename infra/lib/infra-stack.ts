@@ -27,6 +27,13 @@ export class InfraStack extends cdk.Stack {
 
     const bucket = new s3.Bucket(this, "Bucket", {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET],
+          allowedOrigins: ['http://localhost:3000', "https://icfpc2023kmcob.vercel.app"],
+          allowedHeaders: ['*'],
+        },
+      ],
     });
 
     const solver = new lambda.DockerImageFunction(this, "Solver", {
