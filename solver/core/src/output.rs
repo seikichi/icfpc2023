@@ -10,6 +10,7 @@ pub struct RawPlacement {
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct RawSolution {
     placements: Vec<RawPlacement>,
+    volumes: Option<Vec<f32>>,
 }
 
 #[allow(dead_code)]
@@ -31,13 +32,18 @@ pub fn load_from_str(s: &str) -> io::Result<Solution> {
     Ok(solution)
 }
 
-pub fn save_to_file<P: AsRef<Path>>(path: P, solution: &Solution) -> io::Result<()> {
+pub fn save_to_file<P: AsRef<Path>>(
+    path: P,
+    solution: &Solution,
+    volumes: &Vec<f32>,
+) -> io::Result<()> {
     let raw_solution = RawSolution {
         placements: solution
             .placements
             .iter()
             .map(|p| RawPlacement { x: p.x, y: p.y })
             .collect(),
+        volumes: Some(volumes.clone()),
     };
 
     let output_json = serde_json::to_string(&raw_solution)?;

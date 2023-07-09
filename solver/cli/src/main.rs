@@ -151,9 +151,10 @@ pub fn run() -> anyhow::Result<()> {
         info!("    {i}: {score}")
     }
 
+    let volumes = score::make_volumes(&original_input, &solution);
     let output_filename = opt.output_dir.join(problem_id.clone() + ".json");
     info!("output JSON to: {}", output_filename.to_string_lossy());
-    output::save_to_file(output_filename, &solution)?;
+    output::save_to_file(output_filename, &solution, &volumes)?;
 
     let score = score_history.last().unwrap();
     let output = Output { score: *score };

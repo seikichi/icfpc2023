@@ -55,6 +55,16 @@ pub fn calculate_score_of_a_musician(
     scores
 }
 
+pub fn make_volumes(input: &input::Input, solution: &Solution) -> Vec<f32> {
+    let mut volumes = vec![1.0; input.musicians.len()];
+    for k in 0..input.musicians.len() {
+        let score_k = calculate_score_of_a_musician(input, solution, k);
+        let score = score_k.iter().sum::<i64>();
+        volumes[k] = if score > 0 { 10.0 } else { 0.0 };
+    }
+    return volumes;
+}
+
 pub fn validate_solution(input: &input::Input, solution: &Solution) -> anyhow::Result<()> {
     let stage_pos1 = input.room.stage_pos;
     let stage_size = input.room.stage_size;
