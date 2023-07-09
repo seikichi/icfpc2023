@@ -90,7 +90,7 @@ export default function ChallengeDashboard(props: Props) {
                   {props.solutions.map((s) => (
                     <TableRow key={s.id}>
                       <TableCell>
-                        <Link href={`/problem/${s.problemId}`}>
+                        <Link href={`/problems/${s.problemId}`}>
                           {s.problemId}
                         </Link>
                       </TableCell>
@@ -154,7 +154,7 @@ export default function ChallengeDashboard(props: Props) {
                   {props.failures.map((f) => (
                     <TableRow key={f.id}>
                       <TableCell>
-                        <Link href={`/problem/${f.problemId}`}>
+                        <Link href={`/problems/${f.problemId}`}>
                           {f.problemId}
                         </Link>
                       </TableCell>
