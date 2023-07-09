@@ -2,8 +2,12 @@ import json
 import optuna
 import subprocess
 import os.path as op
+import shutil
+
+problem_id = 8
 
 def objective(trial):
+    p = trial.suggest_int("p", 50, 500000, log=True)
     temperature = trial.suggest_float("temperature", 10, 10000, log=True)
 
     swap = trial.suggest_int("swap", 0, 10)
@@ -13,11 +17,11 @@ def objective(trial):
     output = subprocess.check_output([
         op.join("..", "..", "solver", "target", "release", "cli"),
         "-a",
-        "RandomPut,Annealing",
+        "RingSide,Annealing",
         "--annealing-initial-temperature",
         f"{temperature}",
         "-i",
-        op.join("..", "..", "solver", "problems", "8.json"),
+        op.join("..", "..", "solver", "problems", f"{problem_id}.json"),
          "-o",
          "tmp",
          "-Q",
@@ -29,17 +33,26 @@ def objective(trial):
          f"{move}",
          "--annealing-multi-move-ratio",
          f"{multi}",
+         "-p",
+         f"{p}"
     ])
-    return json.loads(output)['score']
 
-study = optuna.create_study(direction="maximize")
-study.optimize(objective, n_trials=50)
+    score = json.loads(output)['score']
+    return score
+
+study = optuna.create_study(direction="maximize",
+                            study_name=f"solver-{problem_id}",
+                            storage=f"sqlite:///study-{problem_id}.db",
+                            load_if_exists=True)
+
+study.optimize(objective, n_trials=200)
 
 best_params = study.best_params
 found_temperature = best_params["temperature"]
 found_swap = best_params["swap"]
 found_move = best_params["move"]
 found_multi = best_params["multi"]
-print(found_temperature, found_swap, found_move, found_multi)
+found_p = best_params["p"]
+print(found_temperature, found_swap, found_move, found_multi, found_p)
 
 
