@@ -35,10 +35,8 @@ export default async function Page() {
     headers: {
       Authorization: `Bearer ${env.API_TOKEN}`,
     },
-    // cache: "no-store",
   });
   const text = await res.text();
-  console.log(text);
   const problemScores = JSON.parse(text).Success.problems;
 
   return (
