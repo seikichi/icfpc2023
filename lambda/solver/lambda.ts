@@ -215,6 +215,7 @@ export async function main(params: Params) {
     const elapsedSec = Math.ceil((performance.now() - start) / 1000);
     const error = JSON.stringify(e).slice(512);
     const record = {
+      challengeId,
       error,
       problemId,
       commitId: env.COMMIT_ID,
