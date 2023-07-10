@@ -89,7 +89,7 @@ export default function ProblemSolutionList(props: Props) {
                 {s.createdAt.toISOString()}
               </TableCell>
               <TableCell className="text-right">
-                {JSON.parse(s.submissionId || "")}
+                {JSON.parse(s.submissionId || "null")}
               </TableCell>
             </TableRow>
           ))}
