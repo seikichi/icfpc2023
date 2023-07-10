@@ -59,6 +59,12 @@ struct Opt {
     #[structopt(long = "load-path", default_value = "")]
     load_path: String,
 
+    #[structopt(long = "grid-initial-move-distance", default_value = "1.0")]
+    grid_initial_move_distance: f32,
+
+    #[structopt(long = "grid-greed-iteration-num", default_value = "20")]
+    grid_greed_iteration_num: usize,
+
     #[structopt(
         long = "load-old",
         help = "use old score (This flag is checked by Lambda)"
@@ -97,7 +103,10 @@ fn parse_ai_string(
                 move_ratio: opt.annealing_move_ratio,
                 multi_move_ratio: opt.annealing_multi_move_ratio,
             }),
-            "GreedMove" => Box::new(ai::GreedMoveAI {}),
+            "GreedMove" => Box::new(ai::GreedMoveAI {
+                initial_move_distance: opt.grid_initial_move_distance,
+                iteration_num: opt.grid_greed_iteration_num,
+            }),
             x => bail!("'{x}' is not a ChainedAI"),
         };
         chained_ais.push(chained_ai);

@@ -5,18 +5,21 @@ use crate::input::Input;
 use crate::score;
 use crate::Solution;
 
-pub struct GreedMoveAI {}
+pub struct GreedMoveAI {
+    pub initial_move_distance: f32,
+    pub iteration_num: usize,
+}
 
 impl ChainedAI for GreedMoveAI {
     // 各musiciansを上下左右に動かして点数が増えるなら採用するAI
     fn solve(&mut self, input: &Input, initial_solution: &Solution) -> Solution {
         let stage_pos = input.room.stage_pos;
         let stage_size = input.room.stage_size;
-        let mut move_d = 1.0;
+        let mut move_d = self.initial_move_distance;
         let mut solution = initial_solution.clone();
         let mut score_calc = score::DifferentialCalculator::new(input, &solution);
         let mut prev_score = score::calculate(input, &solution).unwrap();
-        for _iter in 0..20 {
+        for _iter in 0..self.iteration_num {
             for k in 0..solution.placements.len() {
                 // println!("{} {} {}", _iter, k, prev_score);
                 for dir in 0..4 {
