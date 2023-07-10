@@ -60,6 +60,7 @@ export default async function Page() {
               <TableHeaderCell className="text-right">
                 Score (Official)
               </TableHeaderCell>
+              <TableHeaderCell className="text-right">Diff (%)</TableHeaderCell>
             </TableRow>
           </TableHead>
 
@@ -89,6 +90,24 @@ export default async function Page() {
                 </TableCell>
                 <TableCell className="text-right">
                   {problemScores[p.id - 1]}
+                </TableCell>
+                <TableCell className="text-right">
+                  {Math.abs(
+                    Number(bestSolutionsLocal[p.id]) - problemScores[p.id - 1]
+                  )}{" "}
+                  (
+                  {(
+                    Math.abs(
+                      100.0 *
+                        (Number(bestSolutionsLocal[p.id]) -
+                          problemScores[p.id - 1])
+                    ) /
+                    Math.min(
+                      problemScores[p.id - 1],
+                      Number(bestSolutionsLocal[p.id])
+                    )
+                  ).toPrecision(2)}
+                  % )
                 </TableCell>
               </TableRow>
             ))}
