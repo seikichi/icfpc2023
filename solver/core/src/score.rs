@@ -483,6 +483,12 @@ impl DifferentialCalculator {
         )
     }
 
+    pub fn swap_without_scoring(&mut self, current_solution: &mut Solution, k1: usize, k2: usize) {
+        self.n_occlusion.swap(k1, k2);
+        self.n_tangent.swap(k1, k2);
+        current_solution.placements.swap(k1, k2);
+    }
+
     // k を new_k_pos に移動したあとのスコアを返す。
     // このスコアは負の値を取りうる。
     // 内部状態が移動後の状態となっていることが前提である。

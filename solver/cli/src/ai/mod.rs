@@ -1,5 +1,6 @@
 mod annealing;
 mod greed_move;
+mod greed_swap;
 mod grid;
 mod grid_greed;
 mod load;
@@ -8,6 +9,7 @@ mod ring_side;
 
 pub use annealing::*;
 pub use greed_move::*;
+pub use greed_swap::*;
 pub use grid::*;
 pub use grid_greed::*;
 pub use load::*;
