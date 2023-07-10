@@ -3,6 +3,7 @@ import optuna
 import subprocess
 import os.path as op
 import shutil
+import sys
 
 # show.py ${problem_id}
 problem_id = int(sys.argv[len(sys.argv) - 1])
