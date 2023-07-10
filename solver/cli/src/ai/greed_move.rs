@@ -1,5 +1,3 @@
-use core::score::validate_solution;
-
 use glam::Vec2;
 
 use crate::ai::ChainedAI;
