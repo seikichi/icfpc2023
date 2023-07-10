@@ -3,8 +3,8 @@ use std::{fs, io, path::Path};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct RawPlacement {
-    x: f32,
-    y: f32,
+    x: f64,
+    y: f64,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -26,7 +26,7 @@ pub fn load_from_str(s: &str) -> io::Result<Solution> {
         placements: raw_solution
             .placements
             .iter()
-            .map(|p| Vec2::new(p.x, p.y))
+            .map(|p| Vec2::new(p.x as f32, p.y as f32))
             .collect(),
     };
     Ok(solution)
@@ -41,7 +41,10 @@ pub fn save_to_file<P: AsRef<Path>>(
         placements: solution
             .placements
             .iter()
-            .map(|p| RawPlacement { x: p.x, y: p.y })
+            .map(|p| RawPlacement {
+                x: p.x as f64,
+                y: p.y as f64,
+            })
             .collect(),
         volumes: Some(volumes.clone()),
     };
