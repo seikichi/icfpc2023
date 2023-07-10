@@ -28,7 +28,7 @@ function ScoreChart(params: { solutions: readonly SolutionRecord[] }) {
   return (
     <Card className="mt-8">
       <Title>Max Score History</Title>
-      <Text>X 軸が適当</Text>
+      <Text>X 軸の間隔は適当</Text>
       <LineChart
         className="mt-6 h-80"
         data={data}

@@ -1,3 +1,4 @@
+import ChallengeChart from "@/components/ChallengeChart";
 import ChallengeListDashboard from "@/components/ChallengeListDashboard";
 import ChallengeSubmit from "@/components/ChallengeSubmit";
 import { prisma } from "@/lib/db";
@@ -5,7 +6,7 @@ import { Title } from "@tremor/react";
 
 export const revalidate = 60;
 
-const MAX_CHALLENGE = 50;
+const MAX_CHALLENGE = 500;
 
 export default async function Page() {
   const bestChallenges = await prisma.challenge.findMany({
@@ -21,6 +22,7 @@ export default async function Page() {
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       <Title>Challenges</Title>
       <ChallengeSubmit />
+      <ChallengeChart challenges={recentChallenges} />
       <ChallengeListDashboard
         bestChallenges={bestChallenges}
         recentChallenges={recentChallenges}
