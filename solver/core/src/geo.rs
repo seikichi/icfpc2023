@@ -244,6 +244,15 @@ fn test_distance_to_rectangle() {
     );
 }
 
+pub fn distance_to_rectangle_inner(a: Vec2, size: Vec2, p: Vec2) -> f32 {
+    let b = a + size;
+    let d1 = (p.x - a.x).abs();
+    let d2 = (p.y - a.y).abs();
+    let d3 = (p.x - b.x).abs();
+    let d4 = (p.y - b.y).abs();
+    d1.min(d2).min(d3).min(d4)
+}
+
 // cf. https://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
 #[allow(dead_code)]
 fn draw_line(mut p0: Vec2, mut p1: Vec2, plot: impl Fn(IVec2)) {

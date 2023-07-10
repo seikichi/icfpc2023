@@ -1,9 +1,9 @@
 use crate::ai::ChainedAI;
 use crate::input::Input;
 use crate::score;
-use crate::Solution;
+use crate::{Room, Solution};
 use glam::Vec2;
-use log::info;
+use log::{debug, info};
 use rand::prelude::*;
 use std::f32::consts::PI;
 use std::time::{Duration, Instant};
@@ -14,6 +14,7 @@ pub struct AnnealingAI {
     pub swap_ratio: f32,
     pub move_ratio: f32,
     pub multi_move_ratio: f32,
+    pub prefer_edge: bool,
 }
 
 impl ChainedAI for AnnealingAI {
@@ -91,10 +92,10 @@ impl ChainedAI for AnnealingAI {
             let new_score = if method_r < self.swap_ratio {
                 // 0. swap する
                 let mut k1 = rng.gen::<usize>() % musicians.len();
-                let mut k2 = rng.gen::<usize>() % musicians.len();
+                let mut k2 = choose_musician(input, &solution, &mut rng, self.prefer_edge);
                 while k1 == k2 {
                     k1 = rng.gen::<usize>() % musicians.len();
-                    k2 = rng.gen::<usize>() % musicians.len();
+                    k2 = choose_musician(input, &solution, &mut rng, self.prefer_edge);
                 }
                 if musicians[k1].instrument == musicians[k2].instrument {
                     continue;
@@ -194,6 +195,38 @@ impl ChainedAI for AnnealingAI {
             }
         }
     }
+}
+
+fn is_near_edge(room: &Room, p: Vec2) -> bool {
+    let d = core::geo::distance_to_rectangle_inner(room.stage_pos, room.stage_size, p);
+    d <= 20.0
+}
+
+fn choose_musician(
+    input: &Input,
+    solution: &Solution,
+    rng: &mut SmallRng,
+    prefer_edge: bool,
+) -> usize {
+    let mut k = rng.gen::<usize>() % input.musicians.len();
+    if prefer_edge {
+        let mut iter = 0;
+        while !is_near_edge(&input.room, solution.placements[k]) && iter < 1000 {
+            k = rng.gen::<usize>() % input.musicians.len();
+            iter += 1;
+        }
+        if iter > 9 {
+            debug!("iter = {}", iter);
+        }
+    }
+    k
+}
+
+fn choose_direction_ortho(rng: &mut SmallRng, delta: f32) -> Vec2 {
+    let dir = rng.gen::<usize>() % 4;
+    let dx = [delta, 0.0, -delta, 0.0][dir];
+    let dy = [0.0, delta, 0.0, -delta][dir];
+    Vec2::new(dx, dy)
 }
 
 // musician を動かした後にぶつかったmusiciansも同じ方向に動かす

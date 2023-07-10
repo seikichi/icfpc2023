@@ -56,6 +56,9 @@ struct Opt {
     #[structopt(long = "annealing-multi-move-ratio", default_value = "10.0")]
     annealing_multi_move_ratio: f32,
 
+    #[structopt(long = "annealing-prefer-edge")]
+    annealing_prefer_edge: bool,
+
     #[structopt(long = "load-path", default_value = "")]
     load_path: String,
 
@@ -96,6 +99,7 @@ fn parse_ai_string(
                 swap_ratio: opt.annealing_swap_ratio,
                 move_ratio: opt.annealing_move_ratio,
                 multi_move_ratio: opt.annealing_multi_move_ratio,
+                prefer_edge: opt.annealing_prefer_edge,
             }),
             "GreedMove" => Box::new(ai::GreedMoveAI {}),
             x => bail!("'{x}' is not a ChainedAI"),
