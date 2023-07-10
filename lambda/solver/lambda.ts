@@ -1,6 +1,10 @@
 // Lambda 実行用
 
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { promisify } from "util";
 import * as path from "path";
 import * as child_process from "child_process";
@@ -69,6 +73,42 @@ export async function main(params: Params) {
 
   // NOTE: need to save /tmp (Lambda)
   try {
+    // fetch existing problem if needed
+    const isCont = params.args.includes("Load");
+    let extraArgs = "";
+    if (isCont) {
+      const sol = await prisma.solution.findFirst({
+        where: {
+          problemId: params.problemId,
+          // TODO: consider to use old scores
+        },
+        orderBy: {
+          score: "desc",
+        },
+      });
+      if (!sol) {
+        throw `failed to best solution: ${problemId}`;
+      }
+
+      console.log(sol);
+
+      const obj = await s3.send(
+        new GetObjectCommand({
+          Bucket: env.BUCKET,
+          Key: sol.bucketKey,
+        })
+      );
+      if (!obj.Body) {
+        throw `failed to fetch body: ${problemId}, ${sol.bucketKey}`;
+      }
+
+      const str = await obj.Body.transformToString();
+
+      const p = path.join(tmpDir, "old.json");
+      await fs.writeFile(p, str, { encoding: "utf-8" });
+      extraArgs = `--load-path ${p}`;
+    }
+
     const res = await fetch(
       `https://cdn.icfpcontest.com/problems/${problemId}.json`
     );
@@ -81,7 +121,7 @@ export async function main(params: Params) {
     await fs.mkdir(outDir, { recursive: true });
     await fs.writeFile(problemPath, await res.text(), { encoding: "utf-8" });
 
-    const command = `${solverPath} -i ${problemPath} -o ${outDir} -Q ${args}`;
+    const command = `${solverPath} -i ${problemPath} -o ${outDir} -Q ${args} ${extraArgs}`;
     console.log(`run: ${command}`);
 
     const { stdout, stderr } = await exec(command);
