@@ -6,7 +6,7 @@ export const revalidate = 60;
 
 export default async function Page({ params }: { params: { id: string } }) {
   const solutions = await prisma.solution.findMany({
-    take: 50,
+    take: 1000,
     where: {
       problemId: parseInt(params.id, 10),
     },
