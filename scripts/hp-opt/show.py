@@ -4,7 +4,8 @@ import subprocess
 import os.path as op
 import shutil
 
-problem_id = 8
+# show.py ${problem_id}
+problem_id = int(sys.argv[len(sys.argv) - 1])
 
 study = optuna.load_study(
     study_name=f"solver-{problem_id}",

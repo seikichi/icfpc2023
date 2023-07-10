@@ -5,12 +5,13 @@ import os.path as op
 import shutil
 import sys
 
-problem_id = 8
+# main.py ${problem_id} ${output_dir}
 
+problem_id = int(sys.argv[len(sys.argv) - 2])
 outdir = sys.argv[len(sys.argv) - 1]
 
 def objective(trial):
-    p = trial.suggest_int("p", 50, 500000, log=True)
+    p = trial.suggest_int("p", 50, 5000000, log=True)
     temperature = trial.suggest_float("temperature", 10, 10000, log=True)
 
     swap = trial.suggest_int("swap", 0, 10)
