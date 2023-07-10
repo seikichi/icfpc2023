@@ -42,6 +42,8 @@ def objective(trial):
     ])
 
     score = json.loads(output)['score']
+    shutil.copyfile(op.join(outdir, f"{problem_id}.json"), op.join(outdir, f"sol-{problem_id}-{score}.json"))
+
     return score
 
 study = optuna.create_study(direction="maximize",
