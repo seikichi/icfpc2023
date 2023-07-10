@@ -77,10 +77,19 @@ export async function main(params: Params) {
     const isCont = params.args.includes("Load");
     let extraArgs = "";
     if (isCont) {
+      const loadOld = params.args.includes("--load-old");
+      const condition = loadOld
+        ? ({
+            createdAt: {
+              lte: "2023-07-09T12:00:00.000Z",
+            },
+          } as const)
+        : {};
+
       const sol = await prisma.solution.findFirst({
         where: {
           problemId: params.problemId,
-          // TODO: consider to use old scores
+          ...condition,
         },
         orderBy: {
           score: "desc",
