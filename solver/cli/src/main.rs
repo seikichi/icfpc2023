@@ -58,6 +58,12 @@ struct Opt {
 
     #[structopt(long = "load-path", default_value = "")]
     load_path: String,
+
+    #[structopt(
+        long = "load-old",
+        help = "use old score (This flag is checked by Lambda)"
+    )]
+    load_old: bool,
 }
 
 // 標準出力に JSON 形式で出力し、Lambda の JS が DB に書き込む
