@@ -65,6 +65,9 @@ struct Opt {
     #[structopt(long = "greed-move-iteration-num", default_value = "20")]
     greed_move_iteration_num: usize,
 
+    #[structopt(long = "greed-swap-iteration-num", default_value = "5")]
+    greed_swap_iteration_num: usize,
+
     #[structopt(
         long = "load-old",
         help = "use old score (This flag is checked by Lambda)"
@@ -106,6 +109,9 @@ fn parse_ai_string(
             "GreedMove" => Box::new(ai::GreedMoveAI {
                 initial_move_distance: opt.greed_move_initial_move_distance,
                 iteration_num: opt.greed_move_iteration_num,
+            }),
+            "GreedSwap" => Box::new(ai::GreedSwapAI {
+                iteration_num: opt.greed_swap_iteration_num,
             }),
             x => bail!("'{x}' is not a ChainedAI"),
         };
