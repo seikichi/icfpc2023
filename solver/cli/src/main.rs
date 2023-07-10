@@ -55,6 +55,9 @@ struct Opt {
 
     #[structopt(long = "annealing-multi-move-ratio", default_value = "10.0")]
     annealing_multi_move_ratio: f32,
+
+    #[structopt(long = "load-path", default_value = "")]
+    load_path: String,
 }
 
 // 標準出力に JSON 形式で出力し、Lambda の JS が DB に書き込む
@@ -73,6 +76,9 @@ fn parse_ai_string(
         "GridGreed" => Box::new(ai::GridGreedAI {}),
         "RingSide" => Box::new(ai::RingSideAI {}),
         "RandomPut" => Box::new(ai::RandomPutAI {}),
+        "Load" => Box::new(ai::LoadAI {
+            path: opt.load_path.clone(),
+        }),
         x => bail!("'{x}' is not a HeadAI"),
     };
     let mut chained_ais = vec![];
