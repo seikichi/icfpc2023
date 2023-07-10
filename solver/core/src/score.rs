@@ -543,6 +543,9 @@ impl DifferentialCalculator {
             let s = (1_000_000.0 * taste / squared_distance * together_facotr).ceil() as i64;
             score += s;
         }
+        if score < 0 {
+            score = 0;
+        }
         score
     }
 }
