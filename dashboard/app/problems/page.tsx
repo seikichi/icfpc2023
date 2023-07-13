@@ -9,7 +9,6 @@ import {
   TableHeaderCell,
   TableBody,
 } from "@tremor/react";
-import Link from "next/link";
 import Image from "next/image";
 import { env } from "@/lib/env";
 
@@ -64,10 +63,10 @@ export default async function Page() {
             {problems.map((p) => (
               <TableRow key={p.id}>
                 <TableCell>
-                  <Link href={`/problems/${p.id}`}>{p.id}</Link>
+                  <a href={`/problems/${p.id}.html`}>{p.id}</a>
                 </TableCell>
                 <TableCell>
-                  <a href={`/problems/${p.id}`}>
+                  <a href={`/problems/${p.id}.html`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       alt={`${p.id}`}

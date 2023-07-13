@@ -15,7 +15,6 @@ import {
   TableHeaderCell,
   TableBody,
 } from "@tremor/react";
-import Link from "next/link";
 
 type Props = {
   bestChallenges: readonly Challenge[];
@@ -43,7 +42,7 @@ function ChallengeTable({ challenges }: { challenges: readonly Challenge[] }) {
         {challenges.map((c) => (
           <TableRow key={c.id}>
             <TableCell>
-              <Link href={`/challenges/${c.id}`}>{c.id}</Link>
+              <a href={`/challenges/${c.id}.html`}>{c.id}</a>
             </TableCell>
             <TableCell className="text-right">{c.tag}</TableCell>
             <TableCell className="text-left">{c.args}</TableCell>
@@ -51,11 +50,11 @@ function ChallengeTable({ challenges }: { challenges: readonly Challenge[] }) {
               {c.createdAt.toISOString()}
             </TableCell>
             <TableCell className="text-right">
-              <Link
+              <a
                 href={`https://github.com/seikichi/icfpc2023/commit/${c.commitId}`}
               >
                 {c.commitId}
-              </Link>
+              </a>
             </TableCell>
             <TableCell className="text-right">{c.target}</TableCell>
             <TableCell className="text-right">{c.solved}</TableCell>

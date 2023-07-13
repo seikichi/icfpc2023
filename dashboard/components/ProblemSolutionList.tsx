@@ -12,7 +12,6 @@ import {
   TableBody,
   Button,
 } from "@tremor/react";
-import Link from "next/link";
 import { useCallback } from "react";
 
 type Props = {
@@ -66,19 +65,19 @@ export default function ProblemSolutionList(props: Props) {
           {props.solutions.map((s) => (
             <TableRow key={s.id}>
               <TableCell>
-                <Link href={`/challenges/${s.challengeId}`}>
+                <a href={`/challenges/${s.challengeId}.html`}>
                   {s.challengeId}
-                </Link>
+                </a>
               </TableCell>
               <TableCell className="text-right">{Number(s.score)}</TableCell>
               <TableCell className="text-left">{s.args}</TableCell>
               <TableCell className="text-right">{s.elapsedSec}</TableCell>
               <TableCell className="text-right">
-                <Link
+                <a
                   href={`https://github.com/seikichi/icfpc2023/commit/${s.commitId}`}
                 >
                   {s.commitId}
-                </Link>
+                </a>
               </TableCell>
               <TableCell className="text-right">
                 <Button

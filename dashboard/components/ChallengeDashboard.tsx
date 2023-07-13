@@ -16,7 +16,6 @@ import {
   TableBody,
   Button,
 } from "@tremor/react";
-import Link from "next/link";
 import { useCallback } from "react";
 
 type Props = {
@@ -115,9 +114,9 @@ export default function ChallengeDashboard(props: Props) {
                   {props.solutions.map((s) => (
                     <TableRow key={s.id}>
                       <TableCell>
-                        <Link href={`/problems/${s.problemId}`}>
+                        <a href={`/problems/${s.problemId}.html`}>
                           {s.problemId}
-                        </Link>
+                        </a>
                       </TableCell>
                       <TableCell className="text-right">
                         {Number(s.score)}
@@ -181,9 +180,9 @@ export default function ChallengeDashboard(props: Props) {
                   {props.failures.map((f) => (
                     <TableRow key={f.id}>
                       <TableCell>
-                        <Link href={`/problems/${f.problemId}`}>
+                        <a href={`/problems/${f.problemId}.html`}>
                           {f.problemId}
-                        </Link>
+                        </a>
                       </TableCell>
                       <TableCell className="text-right">{f.error}</TableCell>
                       <TableCell className="text-left">{f.args}</TableCell>
@@ -225,7 +224,7 @@ export default function ChallengeDashboard(props: Props) {
                   {noDataIds.map((p) => (
                     <TableRow key={p}>
                       <TableCell className="text-left">
-                        <Link href={`/problems/${p}`}>{p}</Link>
+                        <a href={`/problems/${p}.html`}>{p}</a>
                       </TableCell>
                       {/* <TableCell className="text-right">
                         {props.challenge?.tag || ""}
