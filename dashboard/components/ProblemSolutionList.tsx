@@ -1,6 +1,5 @@
 "use client";
 
-import { generateSolutionUrl } from "@/lib/actions";
 import { Solution } from "@/lib/schema";
 import { Solution as SolutionRecord } from "@prisma/client";
 import {
@@ -27,7 +26,7 @@ export default function ProblemSolutionList(props: Props) {
     (key: string) => {
       (async () => {
         try {
-          const { url } = await generateSolutionUrl(key);
+          const url = `/solutions/${key}`;
           const response = await fetch(url, { mode: "cors" });
           if (!response.ok) {
             throw new Error(response.statusText);

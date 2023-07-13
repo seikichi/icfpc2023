@@ -1,6 +1,5 @@
 "use client";
 
-import { generateSolutionUrl } from "@/lib/actions";
 import { Challenge, Failure, Solution } from "@prisma/client";
 import {
   Tab,
@@ -47,7 +46,7 @@ export default function ChallengeDashboard(props: Props) {
   const handleDownloadClick = useCallback((key: string) => {
     (async () => {
       try {
-        const { url } = await generateSolutionUrl(key);
+        const url = `/solutions/${key}`;
 
         const link = document.createElement("a");
         try {

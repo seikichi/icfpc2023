@@ -8,14 +8,10 @@ import {
   TableHead,
   TableHeaderCell,
   TableBody,
-  BadgeDelta,
-  DeltaType,
 } from "@tremor/react";
 import Link from "next/link";
 import Image from "next/image";
 import { env } from "@/lib/env";
-
-export const revalidate = 600;
 
 export default async function Page() {
   const problems = await prisma.problem.findMany();
@@ -33,13 +29,13 @@ export default async function Page() {
         (s) => (bestSolutionsLocal[s.problemId] = s._max.score || BigInt(0))
       )
     );
-  const res = await fetch("https://api.icfpcontest.com/userboard", {
-    headers: {
-      Authorization: `Bearer ${env.API_TOKEN}`,
-    },
-  });
-  const text = await res.text();
-  const problemScores = JSON.parse(text).Success.problems;
+  // const res = await fetch("https://api.icfpcontest.com/userboard", {
+  //   headers: {
+  //     Authorization: `Bearer ${env.API_TOKEN}`,
+  //   },
+  // });
+  // const text = await res.text();
+  // const problemScores = JSON.parse(text).Success.problems;
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
@@ -57,10 +53,10 @@ export default async function Page() {
               <TableHeaderCell className="text-right">
                 Score (Local)
               </TableHeaderCell>
-              <TableHeaderCell className="text-right">
+              {/* <TableHeaderCell className="text-right">
                 Score (Official)
               </TableHeaderCell>
-              <TableHeaderCell className="text-right">Diff (%)</TableHeaderCell>
+              <TableHeaderCell className="text-right">Diff (%)</TableHeaderCell> */}
             </TableRow>
           </TableHead>
 
@@ -72,7 +68,8 @@ export default async function Page() {
                 </TableCell>
                 <TableCell>
                   <a href={`/problems/${p.id}`}>
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       alt={`${p.id}`}
                       src={`/problems/${p.id}.png`}
                       width={0}
@@ -88,7 +85,7 @@ export default async function Page() {
                 <TableCell className="text-right">
                   {Number(bestSolutionsLocal[p.id])}
                 </TableCell>
-                <TableCell className="text-right">
+                {/* <TableCell className="text-right">
                   {problemScores[p.id - 1]}
                 </TableCell>
                 <TableCell className="text-right">
@@ -108,7 +105,7 @@ export default async function Page() {
                     )
                   ).toPrecision(2)}
                   % )
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))}
           </TableBody>

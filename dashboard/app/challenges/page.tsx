@@ -4,8 +4,6 @@ import ChallengeSubmit from "@/components/ChallengeSubmit";
 import { prisma } from "@/lib/db";
 import { Title } from "@tremor/react";
 
-export const revalidate = 60;
-
 const MAX_CHALLENGE = 500;
 
 export default async function Page() {

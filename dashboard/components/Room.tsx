@@ -3,7 +3,11 @@
 import { Room, Solution } from "@/lib/schema";
 import { Card, Title, Flex, Button, Text } from "@tremor/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import wasm, { calculate, calculate_score_of_a_musician, attendee_importance } from "wasm";
+import wasm, {
+  calculate,
+  calculate_score_of_a_musician,
+  attendee_importance,
+} from "wasm";
 
 const MAX_CANVAS_SIZE = 1000;
 
@@ -11,33 +15,22 @@ export type RoomtComponentProps = {
   problemId: number;
   solution: Solution | null;
   setSolution: (solution: Solution | null) => void;
+  room: Room;
 };
 
 export default function RoomtComponent(props: RoomtComponentProps) {
   const { problemId, solution, setSolution } = props;
 
-  const [room, setRoom] = useState<Room | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [score, setScore] = useState<number | null>(null);
   const [musician_scores, setMusiciansScores] = useState<number[] | null>(null);
-  const [attendee_importances, setAttendeeImportances] = useState<number[] | null>(null);
+  const [attendee_importances, setAttendeeImportances] = useState<
+    number[] | null
+  >(null);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(
-          `https://cdn.icfpcontest.com/problems/${problemId}.json`
-        );
-        const room = Room.parse(await res.json());
-        setRoom(room);
-        console.log(room);
-      } catch (e) {
-        alert(JSON.stringify(e));
-      }
-    })();
-  }, [problemId]);
+  const room = props.room;
 
   useEffect(() => {
     if (room === null || solution === null) {
@@ -179,7 +172,7 @@ export default function RoomtComponent(props: RoomtComponentProps) {
       circle.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.fill(circle);
     });
-  }, [canvasRef, room, solution, musician_scores]);
+  }, [canvasRef, room, solution, musician_scores, attendee_importances]);
 
   const clearSolution = useCallback(() => {
     setSolution(null);

@@ -1,6 +1,5 @@
 "use client";
 
-import { invokeChallenge } from "@/lib/actions";
 import { SubmitParams } from "@/lib/schema";
 import { Card, Title, Button, Flex, TextInput, Text } from "@tremor/react";
 import { useForm } from "react-hook-form";
@@ -18,8 +17,6 @@ export default function Invoke() {
 
   const onSubmit = async (params: SubmitParams) => {
     reset();
-    console.log(params);
-    await invokeChallenge(params);
     alert("💸💸💸💸💸");
   };
 
@@ -27,6 +24,11 @@ export default function Invoke() {
     <Card className="mt-8">
       <form onSubmit={handleSubmit(onSubmit)}>
         <Title>Submit</Title>
+
+        <Text>
+          コンテスト後追記: コンテスト中はここで Submit すると AWS Lambda
+          でソルバーが実行されました
+        </Text>
 
         <div className="space-y-4 mt-8">
           <div>

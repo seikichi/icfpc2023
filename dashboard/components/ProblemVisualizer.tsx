@@ -1,16 +1,17 @@
 "use client";
 
-import { generateSolutionUrl } from "@/lib/actions";
 import { Solution } from "@/lib/schema";
 import { Solution as SolutionRecord } from "@prisma/client";
 import { Card, LineChart, Title, Text } from "@tremor/react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Room from "./Room";
 import ProblemSolutionList from "./ProblemSolutionList";
+import * as schema from "@/lib/schema";
 
 type Props = {
   problemId: number;
   solutions: readonly SolutionRecord[];
+  room: schema.Room;
 };
 
 function ScoreChart(params: { solutions: readonly SolutionRecord[] }) {
@@ -52,6 +53,7 @@ export default function ProblemVisualizer(props: Props) {
         problemId={props.problemId}
         solution={solution}
         setSolution={setSolution}
+        room={props.room}
       />
 
       <ProblemSolutionList solutions={solutions} setSolution={setSolution} />

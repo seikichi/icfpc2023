@@ -12,9 +12,9 @@ const nextConfig = {
   //     (isServer ? "../" : "") + "static/wasm/[modulehash].wasm";
   //   return config;
   // },
+  output: "export",
   experimental: {
     serverComponentsExternalPackages: ["@tremor/react"],
-    serverActions: true,
   },
 };
 
