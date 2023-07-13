@@ -50,7 +50,13 @@ function ChallengeTable({ challenges }: { challenges: readonly Challenge[] }) {
             <TableCell className="text-right">
               {c.createdAt.toISOString()}
             </TableCell>
-            <TableCell className="text-right">{c.commitId}</TableCell>
+            <TableCell className="text-right">
+              <Link
+                href={`https://github.com/seikichi/icfpc2023/commit/${c.commitId}`}
+              >
+                {c.commitId}
+              </Link>
+            </TableCell>
             <TableCell className="text-right">{c.target}</TableCell>
             <TableCell className="text-right">{c.solved}</TableCell>
             <TableCell className="text-right">{c.failed}</TableCell>

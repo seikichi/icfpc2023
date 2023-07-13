@@ -73,7 +73,13 @@ export default function ProblemSolutionList(props: Props) {
               <TableCell className="text-right">{Number(s.score)}</TableCell>
               <TableCell className="text-left">{s.args}</TableCell>
               <TableCell className="text-right">{s.elapsedSec}</TableCell>
-              <TableCell className="text-right">{s.commitId}</TableCell>
+              <TableCell className="text-right">
+                <Link
+                  href={`https://github.com/seikichi/icfpc2023/commit/${s.commitId}`}
+                >
+                  {s.commitId}
+                </Link>
+              </TableCell>
               <TableCell className="text-right">
                 <Button
                   size="xs"
